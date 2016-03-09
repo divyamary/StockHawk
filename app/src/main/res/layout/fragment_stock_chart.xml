@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+             tools:context="com.sam_chordas.android.stockhawk.ui.StockChartFragment">
+
+    <com.github.mikephil.charting.charts.LineChart
+    xmlns:chart="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/linechart"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    />
+
+
+
+</RelativeLayout>
