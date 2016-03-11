@@ -10,7 +10,7 @@ import retrofit.http.Path;
 /**
  * Created by divyamary on 13-01-2016.
  */
-public interface StockApi {
+public interface StockChartApi {
 
     //type is either close or quote
     @GET("{symbol}/chartdata;type=close;range={range}/json")

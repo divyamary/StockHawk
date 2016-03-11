@@ -1,21 +1,18 @@
 package com.sam_chordas.android.stockhawk.service;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
-import android.os.RemoteException;
-import android.util.Log;
+
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -32,6 +29,7 @@ public class StockTaskService extends GcmTaskService{
   private Context mContext;
   private StringBuilder mStoredSymbols = new StringBuilder();
   private boolean isUpdate;
+  private String stockSymbol;
 
   public StockTaskService(){}
 
@@ -56,9 +54,9 @@ public class StockTaskService extends GcmTaskService{
     StringBuilder urlStringBuilder = new StringBuilder();
     try{
       // Base URL for the Yahoo query
-      urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
+      //urlStringBuilder.append("https://query.yahooapis.com/v1/public/yql?q=");
       urlStringBuilder.append(URLEncoder.encode("select * from yahoo.finance.quotes where symbol "
-        + "in (", "UTF-8"));
+              + "in (", "UTF-8"));
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
@@ -69,12 +67,14 @@ public class StockTaskService extends GcmTaskService{
           null, null);
       if (initQueryCursor.getCount() == 0 || initQueryCursor == null){
         // Init task. Populates DB with quotes for the symbols seen below
-        try {
+        stockSymbol = "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")";
+        /*try {
+
           urlStringBuilder.append(
               URLEncoder.encode("\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")", "UTF-8"));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
-        }
+        }*/
       } else if (initQueryCursor != null){
         DatabaseUtils.dumpCursor(initQueryCursor);
         initQueryCursor.moveToFirst();
@@ -84,21 +84,23 @@ public class StockTaskService extends GcmTaskService{
           initQueryCursor.moveToNext();
         }
         mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
-        try {
+        stockSymbol = mStoredSymbols.toString();
+        /*try {
           urlStringBuilder.append(URLEncoder.encode(mStoredSymbols.toString(), "UTF-8"));
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
-        }
+        }*/
       }
     } else if (params.getTag().equals("add")){
       isUpdate = false;
       // get symbol from params.getExtra and build query
       String stockInput = params.getExtras().getString("symbol");
-      try {
+      stockSymbol = "(\"\"+stockInput+\"\")";
+      /*try {
         urlStringBuilder.append(URLEncoder.encode("\""+stockInput+"\")", "UTF-8"));
       } catch (UnsupportedEncodingException e){
         e.printStackTrace();
-      }
+      }*/
     }
     // finalize the URL for the API query.
     urlStringBuilder.append("&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables."
@@ -107,8 +109,10 @@ public class StockTaskService extends GcmTaskService{
     String urlString;
     String getResponse;
     int result = GcmNetworkManager.RESULT_FAILURE;
+    StockChartClient stockChartClient = new StockChartClient();
+    stockChartClient.getStockInfo(stockSymbol);
 
-    if (urlStringBuilder != null){
+    /*if (urlStringBuilder != null){
       urlString = urlStringBuilder.toString();
       Log.d("MAIN URL:",urlString);
       try{
@@ -130,7 +134,7 @@ public class StockTaskService extends GcmTaskService{
       } catch (IOException e){
         e.printStackTrace();
       }
-    }
+    }*/
 
     return result;
   }
