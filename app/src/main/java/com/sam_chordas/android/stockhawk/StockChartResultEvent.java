@@ -1,23 +1,23 @@
 package com.sam_chordas.android.stockhawk;
 
-import com.sam_chordas.android.stockhawk.model.StockResponse;
+import com.sam_chordas.android.stockhawk.model.StockChart;
 
 /**
  * Created by divyamary on 10-03-2016.
  */
 public class StockChartResultEvent {
 
-    private StockResponse stockResponse;
+    private StockChart mStockChart;
 
-    public StockChartResultEvent(StockResponse stockResponse) {
-        this.stockResponse = stockResponse;
+    public StockChartResultEvent(StockChart stockChart) {
+        this.mStockChart = stockChart;
     }
 
-    public StockResponse getStockResponse() {
-        return stockResponse;
+    public StockChart getStockChart() {
+        return mStockChart;
     }
 
-    public void setStockResponse(StockResponse stockResponse) {
-        this.stockResponse = stockResponse;
+    public void setStockChart(StockChart stockChart) {
+        this.mStockChart = stockChart;
     }
 }

@@ -25,4 +25,27 @@ public class QuoteColumns {
   public static final String ISUP = "is_up";
   @DataType(DataType.Type.INTEGER) @NotNull
   public static final String ISCURRENT = "is_current";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String AVG_DAILY_VOL = "avg_daily_vol";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String DAYS_HIGH = "days_high";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String DAYS_LOW = "days_low";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String YEAR_HIGH = "year_high";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String YEAR_LOW = "year_low";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String MARKET_CAP = "market_cap";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String EARNINGS_SHARE = "earnings_share";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String DIVIDEND_YIELD = "div_yield";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String VOLUME = "vol";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String PE_RATIO = "pe_ratio";
+  @DataType(DataType.Type.TEXT) @NotNull
+  public static final String PREV_CLOSE = "prev_close";
+
 }

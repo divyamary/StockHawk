@@ -15,6 +15,7 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/button_1D"
             style="@style/Base.Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -24,6 +25,7 @@
             android:textColor="#982811"/>
 
         <Button
+            android:id="@+id/button_1W"
             style="@style/Base.Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -32,6 +34,7 @@
             android:text="1W"/>
 
         <Button
+            android:id="@+id/button_1M"
             style="@style/Base.Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -40,6 +43,7 @@
             android:text="1m"/>
 
         <Button
+            android:id="@+id/button_3M"
             style="@style/Base.Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -48,6 +52,7 @@
             android:text="3m"/>
 
         <Button
+            android:id="@+id/button_6M"
             style="@style/Base.Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -56,6 +61,7 @@
             android:text="6m"/>
 
         <Button
+            android:id="@+id/button_1Y"
             style="@style/Base.Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,6 +70,7 @@
             android:text="1y"/>
 
         <Button
+            android:id="@+id/button_5Y"
             style="@style/Base.Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

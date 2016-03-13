@@ -1,13 +1,14 @@
 package com.sam_chordas.android.stockhawk;
 
 import com.google.gson.Gson;
-import com.squareup.okhttp.ResponseBody;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 
-import retrofit.Converter;
+import okhttp3.ResponseBody;
+import retrofit2.Converter;
+
 
 /**
  * From http://stackoverflow.com/questions/34421851/retrofit-how-to-parse-this-response

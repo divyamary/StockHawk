@@ -1,16 +1,21 @@
 package com.sam_chordas.android.stockhawk.ui;
 
-import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
@@ -29,10 +34,11 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.StockBus;
 import com.sam_chordas.android.stockhawk.StockChartResultEvent;
+import com.sam_chordas.android.stockhawk.data.QuoteColumns;
+import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.model.Series;
-import com.sam_chordas.android.stockhawk.model.StockResponse;
-import com.sam_chordas.android.stockhawk.service.StockChartClient;
-import com.sam_chordas.android.stockhawk.service.StockChartResultReceiver;
+import com.sam_chordas.android.stockhawk.model.StockChart;
+import com.sam_chordas.android.stockhawk.service.StockClient;
 import com.squareup.otto.Subscribe;
 
 import java.text.SimpleDateFormat;
@@ -42,79 +48,38 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-public class StockChartFragment extends Fragment implements OnChartGestureListener, OnChartValueSelectedListener {
+public class StockChartFragment extends Fragment implements OnChartGestureListener,
+        OnChartValueSelectedListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    StockChartResultReceiver mStockChartResultReceiver;
-    /**
-     * AverageDailyVolume
-     * Bid
-     * DaysHigh
-     * DaysLow
-     * YearHigh
-     * YearLow
-     * MarketCapitalization
-     * PreviousClose
-     * EarningsShare
-     * DividendYield
-     * Volume
-     * PERatio
-     */
-
-
-    private Intent mServiceIntent;
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private static final int CHART_LOADER = 1;
+    private Cursor mCursor;
     private boolean mIsBusRegistered;
 
     private LineChart mChart;
     private int oneYearCount;
     private List<String> listLabels;
+    private String stockSymbol;
+    private StockChart stockChart;
+    private String range = "1d";
+    private StockClient mStockClient;
+    private String dateFormat = "h:mm";
 
     public StockChartFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment StockChartFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static StockChartFragment newInstance(String param1, String param2) {
-        StockChartFragment fragment = new StockChartFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        /* Allow activity to show indeterminate progressbar */
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
         registerBus();
-        StockChartClient stockChartClient = new StockChartClient();
-        //mStockChartResultReceiver = new StockChartResultReceiver(new Handler());
-        /*mServiceIntent = new Intent(getActivity(), StockChartClient.class);
-        mServiceIntent.putExtra("receiverTag", mStockChartResultReceiver);*/
-        String stockSymbol = getArguments().getString("symbol");
-        stockChartClient.getStockChart(stockSymbol);
-       /* mServiceIntent.putExtra("tag", "chart");
-        mServiceIntent.putExtra("symbol", stockSymbol);
-        getActivity().startService(mServiceIntent);*/
+        mStockClient = new StockClient();
+        stockSymbol = getArguments().getString("symbol");
+        //default range is 1d
+        mStockClient.getStockChart(stockSymbol, range);
     }
 
     @Override
@@ -122,8 +87,12 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_stock_chart, container, false);
-
-
+        int[] button_ids = new int[]{R.id.button_1D, R.id.button_1W, R.id.button_1M,
+                R.id.button_3M, R.id.button_6M, R.id.button_1Y, R.id.button_5Y};
+        for (int i = 0; i < button_ids.length; i++) {
+            Button button = (Button) rootView.findViewById(button_ids[i]);
+            button.setOnClickListener(this);
+        }
         // in this example, a LineChart is initialized from xml
         mChart = (LineChart) rootView.findViewById(R.id.linechart);
         mChart.setOnChartGestureListener(this);
@@ -216,6 +185,12 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        getLoaderManager().initLoader(CHART_LOADER, null, this);
+    }
+
+    @Override
     public void onDestroy() {
         unregisterBus();
         super.onDestroy();
@@ -237,8 +212,9 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
 
     @Subscribe
     public void onStockChartResult(StockChartResultEvent stockChartResultEvent) {
-        StockResponse stockResponse = stockChartResultEvent.getStockResponse();
-        LinkedList<Double> closingValues = getStockClosingVals(stockResponse);
+        mChart.clear();
+        stockChart = stockChartResultEvent.getStockChart();
+        LinkedList<Double> closingValues = getStockClosingVals(stockChart);
         setData(oneYearCount, closingValues);
     }
 
@@ -341,7 +317,7 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
         Log.i("Nothing selected", "Nothing selected.");
     }
 
-    public LinkedList getStockClosingVals(StockResponse stockResponse) {
+    public LinkedList getStockClosingVals(StockChart stockChart) {
         //java.util.Date time=new java.util.Date((long)timeStamp*1000);
         LinkedList<Double> closingValues = new LinkedList<>();
         listLabels = new ArrayList<>();
@@ -351,15 +327,89 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
             String date = new SimpleDateFormat("h:mm").format(time);
             listLabels.add(date);
         }*/
-        oneYearCount = stockResponse.getSeries().size();
+        oneYearCount = stockChart.getSeries().size();
         Log.d("ONEYEARCOUNT", ":" + oneYearCount);
-        for (Series series : stockResponse.getSeries()) {
+        for (Series series : stockChart.getSeries()) {
             Long timeStamp = series.getTimestamp();
             Date time = new java.util.Date(timeStamp * 1000L);
-            String date = new SimpleDateFormat("h:mm").format(time);
+            String date = new SimpleDateFormat(dateFormat).format(time);
             listLabels.add(date);
             closingValues.add(series.getClose());
         }
         return closingValues;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getContext(), QuoteProvider.Quotes.CONTENT_URI,
+                new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
+                        QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
+                QuoteColumns.SYMBOL + " = ?",
+                new String[]{stockSymbol},
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mCursor = data;
+        if (mCursor != null) {
+            mCursor.moveToFirst();
+            TextView textView = (TextView) this.getView().findViewById(R.id.bid_price);
+            textView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+
+    @Override
+    public void onClick(View view) {
+        int viewId = view.getId();
+        switch (viewId) {
+            case R.id.button_1D: {
+                dateFormat = "h:mm";
+                range = "1d";
+                break;
+            }
+            case R.id.button_1W: {
+                dateFormat = "EEE";
+                range = "7d";
+                break;
+            }
+            case R.id.button_1M: {
+                dateFormat = "d MMM";
+                range = "1m";
+                break;
+            }
+            case R.id.button_3M: {
+                dateFormat = "d MMM";
+                range = "3m";
+                break;
+            }
+            case R.id.button_6M: {
+                dateFormat = "d MMM";
+                range = "6m";
+                break;
+            }
+            case R.id.button_1Y: {
+                dateFormat = "d MMM";
+                range = "1y";
+                break;
+            }
+            case R.id.button_5Y: {
+                dateFormat = "yyyy";
+                range = "5y";
+                break;
+            }
+            default: {
+                dateFormat = "h:mm";
+                range = "1d";
+                break;
+            }
+        }
+        mStockClient.getStockChart(stockSymbol, range);
     }
 }
