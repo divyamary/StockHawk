@@ -41,11 +41,16 @@ import com.sam_chordas.android.stockhawk.model.StockChart;
 import com.sam_chordas.android.stockhawk.service.StockClient;
 import com.squareup.otto.Subscribe;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 
 public class StockChartFragment extends Fragment implements OnChartGestureListener,
@@ -58,8 +63,8 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
     private static final int CHART_LOADER = 1;
     private Cursor mCursor;
     private boolean mIsBusRegistered;
-
-    private LineChart mChart;
+    @Bind(R.id.linechart)
+    LineChart mChart;
     private int oneYearCount;
     private List<String> listLabels;
     private String stockSymbol;
@@ -67,6 +72,48 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
     private String range = "1d";
     private StockClient mStockClient;
     private String dateFormat = "h:mm";
+    @Bind(R.id.button_1D)
+    Button oneDayButton;
+    @Bind(R.id.button_1W)
+    Button oneWeekButton;
+    @Bind(R.id.button_1M)
+    Button oneMonthButton;
+    @Bind(R.id.button_3M)
+    Button threeMonthButton;
+    @Bind(R.id.button_6M)
+    Button sixMonthButton;
+    @Bind(R.id.button_1Y)
+    Button oneYearButton;
+    @Bind(R.id.button_5Y)
+    Button fiveYearsButton;
+    @Bind(R.id.button_max)
+    Button maxButton;
+    @Bind(R.id.bid_price)
+    TextView bidTextView;
+    @Bind(R.id.text_open)
+    TextView openTextView;
+    @Bind(R.id.text_high)
+    TextView highTextView;
+    @Bind(R.id.text_low)
+    TextView lowTextView;
+    @Bind(R.id.text_vol)
+    TextView volTextView;
+    @Bind(R.id.text_eps)
+    TextView epsTextView;
+    @Bind(R.id.text_divyield)
+    TextView divYieldTextView;
+    @Bind(R.id.text_mktcap)
+    TextView mktCapTextView;
+    @Bind(R.id.text_yrhigh)
+    TextView yrHighTextView;
+    @Bind(R.id.text_yrlow)
+    TextView yrLowTextView;
+    @Bind(R.id.text_avgvol)
+    TextView avgVolTextView;
+    @Bind(R.id.text_pe)
+    TextView peTextView;
+    @Bind(R.id.text_delay)
+    TextView delayTextView;
 
     public StockChartFragment() {
         // Required empty public constructor
@@ -87,14 +134,16 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_stock_chart, container, false);
-        int[] button_ids = new int[]{R.id.button_1D, R.id.button_1W, R.id.button_1M,
-                R.id.button_3M, R.id.button_6M, R.id.button_1Y, R.id.button_5Y};
-        for (int i = 0; i < button_ids.length; i++) {
-            Button button = (Button) rootView.findViewById(button_ids[i]);
-            button.setOnClickListener(this);
-        }
+        ButterKnife.bind(this, rootView);
+        oneDayButton.setOnClickListener(this);
+        oneWeekButton.setOnClickListener(this);
+        oneMonthButton.setOnClickListener(this);
+        threeMonthButton.setOnClickListener(this);
+        sixMonthButton.setOnClickListener(this);
+        oneYearButton.setOnClickListener(this);
+        fiveYearsButton.setOnClickListener(this);
+        maxButton.setOnClickListener(this);
         // in this example, a LineChart is initialized from xml
-        mChart = (LineChart) rootView.findViewById(R.id.linechart);
         mChart.setOnChartGestureListener(this);
         mChart.setOnChartValueSelectedListener(this);
         mChart.setDrawGridBackground(false);
@@ -122,7 +171,7 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
         XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setEnabled(true);
-        xAxis.setSpaceBetweenLabels(2);
+        xAxis.setSpaceBetweenLabels(4);
         xAxis.setDrawGridLines(false);
         xAxis.setDrawLabels(true);
         xAxis.setAvoidFirstLastClipping(true);
@@ -330,9 +379,20 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
         oneYearCount = stockChart.getSeries().size();
         Log.d("ONEYEARCOUNT", ":" + oneYearCount);
         for (Series series : stockChart.getSeries()) {
-            Long timeStamp = series.getTimestamp();
-            Date time = new java.util.Date(timeStamp * 1000L);
-            String date = new SimpleDateFormat(dateFormat).format(time);
+            String date="";
+            if (range.equals("1d") || range.equals("7d")){
+                Long timeStamp = series.getTimestamp();
+                Date time = new Date(timeStamp * 1000L);
+                date = new SimpleDateFormat(dateFormat).format(time);
+             } else {
+                try {
+                    Long dateStamp = series.getDateStamp();
+                    Date time = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).parse(String.valueOf(dateStamp));
+                    date = new SimpleDateFormat(dateFormat).format(time);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
             listLabels.add(date);
             closingValues.add(series.getClose());
         }
@@ -342,8 +402,7 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getContext(), QuoteProvider.Quotes.CONTENT_URI,
-                new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
-                        QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
+                null,
                 QuoteColumns.SYMBOL + " = ?",
                 new String[]{stockSymbol},
                 null);
@@ -354,8 +413,18 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
         mCursor = data;
         if (mCursor != null) {
             mCursor.moveToFirst();
-            TextView textView = (TextView) this.getView().findViewById(R.id.bid_price);
-            textView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
+            bidTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
+            openTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.OPEN)));
+            highTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.DAYS_HIGH)));
+            lowTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.DAYS_LOW)));
+            volTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.VOLUME)));
+            epsTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.EARNINGS_SHARE)));
+            divYieldTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.DIVIDEND_YIELD)));
+            mktCapTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.MARKET_CAP)));
+            yrHighTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.YEAR_HIGH)));
+            yrLowTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.YEAR_LOW)));
+            avgVolTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.AVG_DAILY_VOL)));
+            peTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PE_RATIO)));
         }
     }
 
@@ -375,7 +444,7 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
                 break;
             }
             case R.id.button_1W: {
-                dateFormat = "EEE";
+                dateFormat = "MM-dd";
                 range = "7d";
                 break;
             }
@@ -402,6 +471,11 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
             case R.id.button_5Y: {
                 dateFormat = "yyyy";
                 range = "5y";
+                break;
+            }
+            case R.id.button_max: {
+                dateFormat = "yyyy";
+                range = "max";
                 break;
             }
             default: {

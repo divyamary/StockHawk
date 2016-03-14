@@ -139,6 +139,11 @@ public class Utils {
         } else {
             builder.withValue(QuoteColumns.PREV_CLOSE, "-");
         }
+        if (quote.getOpen() != null) {
+            builder.withValue(QuoteColumns.OPEN, quote.getOpen());
+        } else {
+            builder.withValue(QuoteColumns.OPEN, "-");
+        }
         return builder.build();
     }
 }

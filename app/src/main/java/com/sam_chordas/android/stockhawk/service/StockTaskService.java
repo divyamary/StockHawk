@@ -76,6 +76,7 @@ public class StockTaskService extends GcmTaskService{
         contentValues.put(QuoteColumns.ISCURRENT, 0);
         mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
                 null, null);
+
       }
       try {
         mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,

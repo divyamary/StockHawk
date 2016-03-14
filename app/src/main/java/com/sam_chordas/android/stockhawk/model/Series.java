@@ -10,6 +10,9 @@ public class Series {
     @SerializedName("Timestamp")
     @Expose
     private Long Timestamp;
+    @SerializedName("Date")
+    @Expose
+    private Long dateStamp;
     @SerializedName("close")
     @Expose
     private Double close;
@@ -38,6 +41,14 @@ public class Series {
      */
     public void setTimestamp(Long Timestamp) {
         this.Timestamp = Timestamp;
+    }
+
+    public Long getDateStamp() {
+        return dateStamp;
+    }
+
+    public void setDateStamp(Long dateStamp) {
+        this.dateStamp = dateStamp;
     }
 
     /**

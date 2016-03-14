@@ -18,6 +18,9 @@ import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperAdapter;
 import com.sam_chordas.android.stockhawk.touch_helper.ItemTouchHelperViewHolder;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Created by sam_chordas on 10/6/15.
  *  Credit to skyfishjy gist:
@@ -90,15 +93,16 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
 
   public static class ViewHolder extends RecyclerView.ViewHolder
       implements ItemTouchHelperViewHolder, View.OnClickListener{
-    public final TextView symbol;
-    public final TextView bidPrice;
-    public final TextView change;
+    @Bind(R.id.stock_symbol)
+    public TextView symbol;
+    @Bind(R.id.bid_price)
+    public TextView bidPrice;
+    @Bind(R.id.change)
+    public TextView change;
     public ViewHolder(View itemView){
       super(itemView);
-      symbol = (TextView) itemView.findViewById(R.id.stock_symbol);
+      ButterKnife.bind(this, itemView);
       symbol.setTypeface(robotoLight);
-      bidPrice = (TextView) itemView.findViewById(R.id.bid_price);
-      change = (TextView) itemView.findViewById(R.id.change);
     }
 
     @Override
