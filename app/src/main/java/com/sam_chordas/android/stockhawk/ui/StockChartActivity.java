@@ -1,7 +1,7 @@
 package com.sam_chordas.android.stockhawk.ui;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -15,6 +15,7 @@ public class StockChartActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             // During initial setup, plug in the details fragment.
             StockChartFragment stockChartFragment = new StockChartFragment();
+            getSupportActionBar().setTitle(getIntent().getStringExtra("symbol"));
             stockChartFragment.setArguments(getIntent().getExtras());
             getSupportFragmentManager().beginTransaction().replace(
                     android.R.id.content, stockChartFragment).commit();

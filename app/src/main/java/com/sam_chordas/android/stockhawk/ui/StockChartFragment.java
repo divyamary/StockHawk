@@ -19,8 +19,6 @@ import android.widget.TextView;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -110,8 +108,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     TextView avgVolTextView;
     @Bind(R.id.text_pe)
     TextView peTextView;
-    @Bind(R.id.text_delay)
-    TextView delayTextView;
+    @Bind(R.id.text_prevclose)
+    TextView prevCloseTextView;
     private boolean mIsViewRestored;
 
     public StockChartFragment() {
@@ -160,30 +158,37 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
 
         mChart.setOnChartGestureListener(this);
         mChart.setOnChartValueSelectedListener(this);
+        mChart.setExtraOffsets(5f, 20f, 5f, 20f);
 
-        LimitLine llXAxis = new LimitLine(10f, "Index 10");
-        llXAxis.setLineWidth(4f);
-        llXAxis.enableDashedLine(10f, 10f, 0f);
-        llXAxis.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
-        llXAxis.setTextSize(10f);
+        // create a custom MarkerView (extend MarkerView) and specify the layout
+        // to use for it
+        CustomMarkerView mv = new CustomMarkerView(getContext(), R.layout.custom_marker_view);
+
+        // set the marker to the chart
+        mChart.setMarkerView(mv);
+
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setEnabled(true);
         xAxis.setSpaceBetweenLabels(4);
-        xAxis.setDrawGridLines(false);
+        xAxis.setDrawGridLines(true);
         xAxis.setDrawLabels(true);
         xAxis.setAvoidFirstLastClipping(true);
+        xAxis.setTextColor(Color.WHITE);
+
 
         YAxis leftAxis = mChart.getAxisLeft();
-        leftAxis.enableGridDashedLine(10f, 10f, 0f);
+        //leftAxis.enableGridDashedLine(10f, 10f, 0f);
+        leftAxis.setDrawGridLines(true);
         leftAxis.setDrawZeroLine(false);
         leftAxis.setDrawLimitLinesBehindData(true);
+        leftAxis.setTextColor(Color.WHITE);
+
 
         mChart.getAxisRight().setEnabled(false);
         mChart.animateX(2500, Easing.EasingOption.EaseInOutQuart);
-        Legend l = mChart.getLegend();
-        l.setForm(Legend.LegendForm.LINE);
+        mChart.getLegend().setEnabled(false);
         return rootView;
     }
 
@@ -255,17 +260,17 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         }
 
         // create a dataset and give it a type
-        LineDataSet set1 = new LineDataSet(yVals, "DataSet 1");
+        LineDataSet set1 = new LineDataSet(yVals, "");
         // set1.setFillAlpha(110);
         // set1.setFillColor(Color.RED);
 
         // set the line to be drawn like this "- - - - - -"
-        set1.enableDashedLine(10f, 5f, 0f);
-        set1.enableDashedHighlightLine(10f, 5f, 0f);
-        set1.setColor(Color.BLACK);
-        set1.setCircleColor(Color.BLACK);
+        //set1.enableDashedLine(10f, 5f, 0f);
+        //set1.enableDashedHighlightLine(10f, 5f, 0f);
+        set1.setColor(Color.WHITE);
+        set1.setDrawCircles(false);
         set1.setLineWidth(1f);
-        set1.setCircleRadius(3f);
+        set1.setCircleRadius(4f);
         set1.setDrawCircleHole(false);
         set1.setValueTextSize(9f);
         Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.fade_red);
@@ -277,6 +282,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
 
         // create a data object with the datasets
         LineData data = new LineData(listLabels, dataSets);
+        data.setValueTextSize(9f);
+        data.setDrawValues(false);
 
         // set data
         mChart.setData(data);
@@ -335,6 +342,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
             yrLowTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.YEAR_LOW)));
             avgVolTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.AVG_DAILY_VOL)));
             peTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PE_RATIO)));
+            prevCloseTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PREV_CLOSE)));
         }
     }
 
@@ -443,6 +451,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
 
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+        Highlight highlight = mChart.getHighlightByTouchPoint(mChart.getX(), mChart.getY());
+
         Log.i("Entry selected", e.toString());
         Log.i("LOWHIGH", "low: " + mChart.getLowestVisibleXIndex() + ", high: " + mChart.getHighestVisibleXIndex());
         Log.i("MIN MAX", "xmin: " + mChart.getXChartMin() + ", xmax: " + mChart.getXChartMax() + ", ymin: " + mChart.getYChartMin() + ", ymax: " + mChart.getYChartMax());

@@ -4,4 +4,4 @@
           android:name="com.sam_chordas.android.stockhawk.ui.StockChartFragment"
           tools:layout="@layout/fragment_stock_chart"
           android:layout_width="match_parent"
-          android:layout_height="match_parent"/>
+          android:layout_height="wrap_content"/>
