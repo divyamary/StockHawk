@@ -1,36 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#99000000"
     android:padding="@dimen/widget_margin">
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/widget"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="?android:attr/listPreferredItemHeightSmall"
-        android:background="@color/material_blue_500">
+        android:layout_height="48dp"
+        android:background="@color/material_blue_500"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|start"
+            android:layout_weight="1"
+            android:scaleType="fitStart"
             android:text="@string/widget_title"
-            android:textSize="@dimen/md_title_textsize"
-            android:layout_gravity="center"/>
-    </FrameLayout>
+            android:textColor="#FFF"
+            android:textSize="@dimen/md_title_textsize"/>
+
+        <ImageButton
+            android:id="@+id/refresh"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical|end"
+            android:background="@drawable/ic_action_refresh"
+            android:contentDescription="refresh"
+            android:scaleType="center"/>
+    </LinearLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
+
         <ListView
             android:id="@+id/widget_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            tools:listitem="@layout/widget_collection_item"/>
+            android:divider="#FFFFFF"
+            android:dividerHeight="1px"
+            tools:listitem="@layout/widget_collection_item"
+            />
+
+        <TextView
+            android:id="@+id/empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="empty"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            android:visibility="gone"/>
     </FrameLayout>
+
+    <!-- <Button
+         android:id="@+id/refresh"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:padding="12dp"
+         android:gravity="center"
+         android:background="#F8F8F8"
+         android:text="Refresh"
+         android:textAllCaps="true"
+         android:textColor="#232323"
+         android:textSize="14sp" />-->
 
 </LinearLayout>

@@ -1,11 +1,14 @@
 
 package com.sam_chordas.android.stockhawk.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class Series {
+public class Series implements Parcelable{
 
     @SerializedName("Timestamp")
     @Expose
@@ -28,6 +31,21 @@ public class Series {
     @SerializedName("volume")
     @Expose
     private Integer volume;
+
+    protected Series(Parcel in) {
+    }
+
+    public static final Creator<Series> CREATOR = new Creator<Series>() {
+        @Override
+        public Series createFromParcel(Parcel in) {
+            return new Series(in);
+        }
+
+        @Override
+        public Series[] newArray(int size) {
+            return new Series[size];
+        }
+    };
 
     /**
      * @return The Timestamp
@@ -121,4 +139,12 @@ public class Series {
         this.volume = volume;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+    }
 }

@@ -1,13 +1,16 @@
 
 package com.sam_chordas.android.stockhawk.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StockChart {
+public class StockChart implements Parcelable {
 
     @SerializedName("meta")
     @Expose
@@ -24,6 +27,21 @@ public class StockChart {
     @SerializedName("series")
     @Expose
     private List<Series> series = new ArrayList<Series>();
+
+    protected StockChart(Parcel in) {
+    }
+
+    public static final Creator<StockChart> CREATOR = new Creator<StockChart>() {
+        @Override
+        public StockChart createFromParcel(Parcel in) {
+            return new StockChart(in);
+        }
+
+        @Override
+        public StockChart[] newArray(int size) {
+            return new StockChart[size];
+        }
+    };
 
     /**
      * @return The meta
@@ -95,4 +113,12 @@ public class StockChart {
         this.series = series;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+    }
 }

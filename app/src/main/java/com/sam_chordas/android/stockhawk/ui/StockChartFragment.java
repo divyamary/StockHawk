@@ -53,19 +53,17 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 
-public class StockChartFragment extends Fragment implements OnChartGestureListener,
-        OnChartValueSelectedListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener {
+public class StockChartFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener ,
+        OnChartGestureListener,
+        OnChartValueSelectedListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String BUNDLE_CHART_RESPONSE = "BUNDLE_CHART_RESPONSE";
     private static final int CHART_LOADER = 1;
     private Cursor mCursor;
     private boolean mIsBusRegistered;
     @Bind(R.id.linechart)
     LineChart mChart;
-    private int oneYearCount;
+    private int seriesSize;
     private List<String> listLabels;
     private String stockSymbol;
     private StockChart stockChart;
@@ -114,6 +112,7 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
     TextView peTextView;
     @Bind(R.id.text_delay)
     TextView delayTextView;
+    private boolean mIsViewRestored;
 
     public StockChartFragment() {
         // Required empty public constructor
@@ -123,10 +122,6 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         registerBus();
-        mStockClient = new StockClient();
-        stockSymbol = getArguments().getString("symbol");
-        //default range is 1d
-        mStockClient.getStockChart(stockSymbol, range);
     }
 
     @Override
@@ -143,9 +138,15 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
         oneYearButton.setOnClickListener(this);
         fiveYearsButton.setOnClickListener(this);
         maxButton.setOnClickListener(this);
-        // in this example, a LineChart is initialized from xml
-        mChart.setOnChartGestureListener(this);
-        mChart.setOnChartValueSelectedListener(this);
+        stockSymbol = getArguments().getString("symbol");
+        mStockClient = new StockClient();
+
+        if(savedInstanceState!=null){
+            stockChart = savedInstanceState.getParcelable(BUNDLE_CHART_RESPONSE);
+        } else {
+            mStockClient.getStockChart(stockSymbol, range);
+        }
+
         mChart.setDrawGridBackground(false);
         // no description text
         mChart.setDescription("");
@@ -155,13 +156,11 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
         // enable scaling and dragging
         mChart.setDragEnabled(true);
         mChart.setScaleEnabled(true);
-        // mChart.setScaleXEnabled(true);
-        // mChart.setScaleYEnabled(true);
-        // if disabled, scaling can be done on x- and y-axis separately
         mChart.setPinchZoom(true);
-        // set an alternative background color
-        // mChart.setBackgroundColor(Color.GRAY);
-        // x-axis limit line
+
+        mChart.setOnChartGestureListener(this);
+        mChart.setOnChartValueSelectedListener(this);
+
         LimitLine llXAxis = new LimitLine(10f, "Index 10");
         llXAxis.setLineWidth(4f);
         llXAxis.enableDashedLine(10f, 10f, 0f);
@@ -176,60 +175,15 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
         xAxis.setDrawLabels(true);
         xAxis.setAvoidFirstLastClipping(true);
 
-
-        //xAxis.setValueFormatter(new MyCustomXAxisValueFormatter());
-        //xAxis.addLimitLine(llXAxis); // add x-axis limit line
-        /*LimitLine ll1 = new LimitLine(130f, "Upper Limit");
-        ll1.setLineWidth(4f);
-        ll1.enableDashedLine(10f, 10f, 0f);
-        ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
-        ll1.setTextSize(10f);
-
-
-        LimitLine ll2 = new LimitLine(-30f, "Lower Limit");
-        ll2.setLineWidth(4f);
-        ll2.enableDashedLine(10f, 10f, 0f);
-        ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
-        ll2.setTextSize(10f);*/
-
-
         YAxis leftAxis = mChart.getAxisLeft();
-        //leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-        //leftAxis.addLimitLine(ll1);
-        //leftAxis.addLimitLine(ll2);
-        //leftAxis.setAxisMaxValue(220f);
-        //leftAxis.setAxisMinValue(-50f);
-        //leftAxis.setYOffset(20f);
         leftAxis.enableGridDashedLine(10f, 10f, 0f);
         leftAxis.setDrawZeroLine(false);
-
-        // limit lines are drawn behind data (and not on top)
         leftAxis.setDrawLimitLinesBehindData(true);
 
         mChart.getAxisRight().setEnabled(false);
-
-        //mChart.getViewPortHandler().setMaximumScaleY(2f);
-        //mChart.getViewPortHandler().setMaximumScaleX(2f);
-        // add data
-        //setData(45, 100);
-
-//        mChart.setVisibleXRange(20);
-//        mChart.setVisibleYRange(20f, AxisDependency.LEFT);
-//        mChart.centerViewTo(20, 50, AxisDependency.LEFT);
-
         mChart.animateX(2500, Easing.EasingOption.EaseInOutQuart);
-//        mChart.invalidate();
-
-        // get the legend (only possible after setting data)
         Legend l = mChart.getLegend();
-
-        // modify the legend ...
-        // l.setPosition(LegendPosition.LEFT_OF_CHART);
         l.setForm(Legend.LegendForm.LINE);
-
-        // // dont forget to refresh the drawing
-        // mChart.invalidate();
-
         return rootView;
     }
 
@@ -237,12 +191,31 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
     public void onStart() {
         super.onStart();
         getLoaderManager().initLoader(CHART_LOADER, null, this);
+        if(mIsViewRestored) {
+            LinkedList<Double> closingValues = getStockClosingVals(stockChart);
+            setData(seriesSize, closingValues);
+        }
     }
 
     @Override
     public void onDestroy() {
         unregisterBus();
         super.onDestroy();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(BUNDLE_CHART_RESPONSE, stockChart);
+    }
+
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if(savedInstanceState!=null){
+            stockChart = savedInstanceState.getParcelable(BUNDLE_CHART_RESPONSE);
+            mIsViewRestored = true;
+        }
     }
 
     private void registerBus() {
@@ -264,7 +237,7 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
         mChart.clear();
         stockChart = stockChartResultEvent.getStockChart();
         LinkedList<Double> closingValues = getStockClosingVals(stockChart);
-        setData(oneYearCount, closingValues);
+        setData(seriesSize, closingValues);
     }
 
     private void setData(int count, LinkedList<Double> range) {
@@ -307,77 +280,14 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
 
         // set data
         mChart.setData(data);
-        mChart.setVisibleXRangeMaximum(oneYearCount);
+        mChart.setVisibleXRangeMaximum(seriesSize);
     }
 
-    @Override
-    public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-        Log.i("Gesture", "START, x: " + me.getX() + ", y: " + me.getY());
-    }
-
-    @Override
-    public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-        Log.i("Gesture", "END, lastGesture: " + lastPerformedGesture);
-
-        // un-highlight values after the gesture is finished and no single-tap
-        if (lastPerformedGesture != ChartTouchListener.ChartGesture.SINGLE_TAP)
-            mChart.highlightValues(null); // or highlightTouch(null) for callback to onNothingSelected(...)
-    }
-
-    @Override
-    public void onChartLongPressed(MotionEvent me) {
-        Log.i("LongPress", "Chart longpressed.");
-    }
-
-    @Override
-    public void onChartDoubleTapped(MotionEvent me) {
-        Log.i("DoubleTap", "Chart double-tapped.");
-    }
-
-    @Override
-    public void onChartSingleTapped(MotionEvent me) {
-        Log.i("SingleTap", "Chart single-tapped.");
-    }
-
-    @Override
-    public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
-        Log.i("Fling", "Chart flinged. VeloX: " + velocityX + ", VeloY: " + velocityY);
-    }
-
-    @Override
-    public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
-        Log.i("Scale / Zoom", "ScaleX: " + scaleX + ", ScaleY: " + scaleY);
-    }
-
-    @Override
-    public void onChartTranslate(MotionEvent me, float dX, float dY) {
-        Log.i("Translate / Move", "dX: " + dX + ", dY: " + dY);
-    }
-
-    @Override
-    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
-        Log.i("Entry selected", e.toString());
-        Log.i("LOWHIGH", "low: " + mChart.getLowestVisibleXIndex() + ", high: " + mChart.getHighestVisibleXIndex());
-        Log.i("MIN MAX", "xmin: " + mChart.getXChartMin() + ", xmax: " + mChart.getXChartMax() + ", ymin: " + mChart.getYChartMin() + ", ymax: " + mChart.getYChartMax());
-    }
-
-    @Override
-    public void onNothingSelected() {
-        Log.i("Nothing selected", "Nothing selected.");
-    }
 
     public LinkedList getStockClosingVals(StockChart stockChart) {
-        //java.util.Date time=new java.util.Date((long)timeStamp*1000);
         LinkedList<Double> closingValues = new LinkedList<>();
         listLabels = new ArrayList<>();
-        /*List<Long> labels = stockResponse.getLabels();
-        for(Long label: labels){
-            Date time = new java.util.Date(label*1000L);
-            String date = new SimpleDateFormat("h:mm").format(time);
-            listLabels.add(date);
-        }*/
-        oneYearCount = stockChart.getSeries().size();
-        Log.d("ONEYEARCOUNT", ":" + oneYearCount);
+        seriesSize = stockChart.getSeries().size();
         for (Series series : stockChart.getSeries()) {
             String date="";
             if (range.equals("1d") || range.equals("7d")){
@@ -485,5 +395,61 @@ public class StockChartFragment extends Fragment implements OnChartGestureListen
             }
         }
         mStockClient.getStockChart(stockSymbol, range);
+    }
+
+    @Override
+    public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+        Log.i("Gesture", "START, x: " + me.getX() + ", y: " + me.getY());
+    }
+
+    @Override
+    public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+        Log.i("Gesture", "END, lastGesture: " + lastPerformedGesture);
+
+        // un-highlight values after the gesture is finished and no single-tap
+        if (lastPerformedGesture != ChartTouchListener.ChartGesture.SINGLE_TAP)
+            mChart.highlightValues(null); // or highlightTouch(null) for callback to onNothingSelected(...)
+    }
+
+    @Override
+    public void onChartLongPressed(MotionEvent me) {
+        Log.i("LongPress", "Chart longpressed.");
+    }
+
+    @Override
+    public void onChartDoubleTapped(MotionEvent me) {
+        Log.i("DoubleTap", "Chart double-tapped.");
+    }
+
+    @Override
+    public void onChartSingleTapped(MotionEvent me) {
+        Log.i("SingleTap", "Chart single-tapped.");
+    }
+
+    @Override
+    public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+        Log.i("Fling", "Chart flinged. VeloX: " + velocityX + ", VeloY: " + velocityY);
+    }
+
+    @Override
+    public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+        Log.i("Scale / Zoom", "ScaleX: " + scaleX + ", ScaleY: " + scaleY);
+    }
+
+    @Override
+    public void onChartTranslate(MotionEvent me, float dX, float dY) {
+        Log.i("Translate / Move", "dX: " + dX + ", dY: " + dY);
+    }
+
+    @Override
+    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+        Log.i("Entry selected", e.toString());
+        Log.i("LOWHIGH", "low: " + mChart.getLowestVisibleXIndex() + ", high: " + mChart.getHighestVisibleXIndex());
+        Log.i("MIN MAX", "xmin: " + mChart.getXChartMin() + ", xmax: " + mChart.getXChartMax() + ", ymin: " + mChart.getYChartMin() + ", ymax: " + mChart.getYChartMax());
+    }
+
+    @Override
+    public void onNothingSelected() {
+        Log.i("Nothing selected", "Nothing selected.");
     }
 }

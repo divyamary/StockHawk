@@ -1,10 +1,13 @@
 
 package com.sam_chordas.android.stockhawk.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Meta {
+public class Meta implements Parcelable{
 
     @SerializedName("uri")
     @Expose
@@ -33,6 +36,28 @@ public class Meta {
     @SerializedName("previous_close")
     @Expose
     private Double previousClose;
+
+    protected Meta(Parcel in) {
+        uri = in.readString();
+        ticker = in.readString();
+        CompanyName = in.readString();
+        ExchangeName = in.readString();
+        unit = in.readString();
+        timezone = in.readString();
+        currency = in.readString();
+    }
+
+    public static final Creator<Meta> CREATOR = new Creator<Meta>() {
+        @Override
+        public Meta createFromParcel(Parcel in) {
+            return new Meta(in);
+        }
+
+        @Override
+        public Meta[] newArray(int size) {
+            return new Meta[size];
+        }
+    };
 
     /**
      * @return The uri
@@ -160,4 +185,19 @@ public class Meta {
         this.previousClose = previousClose;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(uri);
+        parcel.writeString(ticker);
+        parcel.writeString(CompanyName);
+        parcel.writeString(ExchangeName);
+        parcel.writeString(unit);
+        parcel.writeString(timezone);
+        parcel.writeString(currency);
+    }
 }

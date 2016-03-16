@@ -2,10 +2,12 @@ package com.sam_chordas.android.stockhawk.service;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
@@ -26,6 +28,8 @@ public class StockTaskService extends GcmTaskService{
   private StringBuilder mStoredSymbols = new StringBuilder();
   private boolean isUpdate;
   private String stockSymbol;
+  public static final String ACTION_DATA_UPDATED =
+          "com.sam_chordas.android.stockhawk.ACTION_DATA_UPDATED";
 
   public StockTaskService(){}
 
@@ -35,6 +39,7 @@ public class StockTaskService extends GcmTaskService{
 
   @Override
   public int onRunTask(TaskParams params){
+    Log.d("GCM", "ON RUN");
     Cursor initQueryCursor;
     if (mContext == null){
       mContext = this;
@@ -76,11 +81,11 @@ public class StockTaskService extends GcmTaskService{
         contentValues.put(QuoteColumns.ISCURRENT, 0);
         mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
                 null, null);
-
       }
       try {
         mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
                 Utils.quoteJsonToContentVals(stockDetails));
+        updateWidgets();
       } catch (RemoteException e) {
         e.printStackTrace();
       } catch (OperationApplicationException e) {
@@ -88,6 +93,14 @@ public class StockTaskService extends GcmTaskService{
       }
     }
     return result;
+  }
+
+  private void updateWidgets() {
+    Log.d("STOCK TASK", "sending broadcast");
+    // Setting the package ensures that only components in our app will receive the broadcast
+    Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED)
+            .setPackage(mContext.getPackageName());
+    mContext.sendBroadcast(dataUpdatedIntent);
   }
 
 }
