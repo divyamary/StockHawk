@@ -30,9 +30,9 @@
             style="@style/WidgetBidPriceTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingRight="10sp"
-            android:paddingEnd="10sp"
-            android:paddingLeft="10sp"
+            android:paddingRight="@dimen/bid_padding"
+            android:paddingEnd="@dimen/bid_padding"
+            android:paddingLeft="@dimen/bid_padding"
             />
         <TextView
             android:id="@+id/change"
@@ -40,8 +40,8 @@
             style="@style/WidgetPercentChangeTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
+            android:paddingLeft="@dimen/change_padding"
+            android:paddingRight="@dimen/change_padding"
             />
     </LinearLayout>
 

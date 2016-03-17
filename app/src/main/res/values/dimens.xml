@@ -2,11 +2,23 @@
   <!-- Default screen margins, per the Android Design guidelines. -->
   <dimen name="activity_horizontal_margin">16dp</dimen>
   <dimen name="activity_vertical_margin">16dp</dimen>
+  <dimen name="layout_margin">16dp</dimen>
+  <dimen name="display_bottom_margin">4dp</dimen>
+  <dimen name="name_bottom_margin">10dp</dimen>
+  <dimen name="text_bottom_margin">5dp</dimen>
+  <dimen name="text_col1_right_margin">40dp</dimen>
+  <dimen name="text_col2_right_margin">15dp</dimen>
+  <dimen name="text_button_chart_size">12sp</dimen>
+  <dimen name="item_padding">16dp</dimen>
+  <dimen name="item_height">72dp</dimen>
+  <dimen name="chart_horizontal_margin">16dp</dimen>
+  <dimen name="chart_top_margin">8dp</dimen>
+  <dimen name="chart_height">250dp</dimen>
 
-  <!-- Per the design guidelines, navigation drawers should be between 240dp and 320dp:
-         https://developer.android.com/design/patterns/navigation-drawer.html -->
-  <dimen name="navigation_drawer_width">240dp</dimen>
-
-  <dimen name="widget_default_height">110dp</dimen>
-  <dimen name="widget_default_width">110dp</dimen>
+  <dimen name="bid_padding">10dp</dimen>
+  <dimen name="change_padding">3dp</dimen>
+  <dimen name="stock_name_width">100dp</dimen>
+  <dimen name="marker_margin_top">7dp</dimen>
+  <dimen name="marker_margin_horiz">5dp</dimen>
+  <dimen name="marker_text_size">12sp</dimen>
 </resources>

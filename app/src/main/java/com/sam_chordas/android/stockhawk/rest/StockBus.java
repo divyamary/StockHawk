@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk;
+package com.sam_chordas.android.stockhawk.rest;
 
 import com.squareup.otto.Bus;
 

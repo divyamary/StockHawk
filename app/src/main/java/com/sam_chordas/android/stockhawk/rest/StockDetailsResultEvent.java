@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk;
+package com.sam_chordas.android.stockhawk.rest;
 
 import com.sam_chordas.android.stockhawk.model.StockDetails;
 

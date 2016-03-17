@@ -7,7 +7,7 @@
     <string name="action_change_units">Change Units</string>
     <string name="symbol_search">Symbol Search</string>
     <string name="content_test">Search for a Stock Symbol</string>
-    <string name="input_hint">FB</string>
+    <string name="input_hint" translatable="false">FB</string>
     <string name="input_prefill"></string>
     <string name="widget_title">Today\'s Market</string>
     <string name="network_toast">Uh-oh! This app requires an internet connection</string>
@@ -46,5 +46,7 @@
     <string name="descr_one_year">1 year</string>
     <string name="descr_five_years">5 years</string>
     <string name="descr_max">Max</string>
+    <string name="empty_reviews_text">No stocks have been added. You need to be connected to the Internet to add stocks.</string>
+    <string name="descr_stock_chart">Stock Chart</string>
 
 </resources>

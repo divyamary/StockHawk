@@ -5,13 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#99000000"
+    android:background="@color/alpha_black"
     android:padding="@dimen/widget_margin">
 
     <LinearLayout
         android:id="@+id/widget"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="40dp"
         android:background="@color/material_blue_500"
         android:baselineAligned="false"
         android:orientation="horizontal">
@@ -20,17 +20,19 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|start"
+            android:gravity="center"
             android:layout_weight="1"
             android:scaleType="fitStart"
             android:text="@string/widget_title"
-            android:textColor="#FFF"
+            android:textColor="@android:color/white"
             android:textSize="@dimen/md_title_textsize"/>
 
         <ImageButton
             android:id="@+id/refresh"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical|end"
+            android:layout_margin="4dp"
             android:background="@drawable/ic_action_refresh"
             android:contentDescription="@string/descr_refresh"
             android:scaleType="center"/>
@@ -45,8 +47,8 @@
             android:id="@+id/widget_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:divider="#FFFFFF"
-            android:dividerHeight="1px"
+            android:divider="@color/material_gray_100"
+            android:dividerHeight="0.5px"
             tools:listitem="@layout/widget_collection_item"
             />
 
@@ -56,21 +58,10 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="@string/text_empty_widget"
-            android:textColor="#ffffff"
-            android:textSize="20sp"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_size"
             android:visibility="gone"/>
     </FrameLayout>
 
-    <!-- <Button
-         android:id="@+id/refresh"
-         android:layout_width="match_parent"
-         android:layout_height="wrap_content"
-         android:padding="12dp"
-         android:gravity="center"
-         android:background="#F8F8F8"
-         android:text="Refresh"
-         android:textAllCaps="true"
-         android:textColor="#232323"
-         android:textSize="14sp" />-->
 
 </LinearLayout>

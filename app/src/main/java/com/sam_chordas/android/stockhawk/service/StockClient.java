@@ -2,9 +2,9 @@ package com.sam_chordas.android.stockhawk.service;
 
 import android.util.Log;
 
-import com.sam_chordas.android.stockhawk.ApiManager;
-import com.sam_chordas.android.stockhawk.StockBus;
-import com.sam_chordas.android.stockhawk.StockChartResultEvent;
+import com.sam_chordas.android.stockhawk.rest.ApiManager;
+import com.sam_chordas.android.stockhawk.rest.StockBus;
+import com.sam_chordas.android.stockhawk.rest.StockChartResultEvent;
 import com.sam_chordas.android.stockhawk.model.StockChart;
 import com.sam_chordas.android.stockhawk.model.StockDetails;
 

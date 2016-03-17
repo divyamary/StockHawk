@@ -30,13 +30,13 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.StockBus;
-import com.sam_chordas.android.stockhawk.StockChartResultEvent;
+import com.sam_chordas.android.stockhawk.rest.StockBus;
+import com.sam_chordas.android.stockhawk.rest.StockChartResultEvent;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.model.Series;
 import com.sam_chordas.android.stockhawk.model.StockChart;
-import com.sam_chordas.android.stockhawk.rest.Utils;
+import com.sam_chordas.android.stockhawk.Utils;
 import com.sam_chordas.android.stockhawk.service.StockClient;
 import com.squareup.otto.Subscribe;
 
@@ -426,7 +426,11 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 break;
             }
         }
-        mStockClient.getStockChart(stockSymbol, range);
+        if(Utils.isConnected(getContext())) {
+            mStockClient.getStockChart(stockSymbol, range);
+        } else {
+            mChart.clear();
+        }
     }
 
     private void changeButtonTextColor(int viewId) {

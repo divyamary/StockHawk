@@ -12,7 +12,7 @@ import android.view.View;
 /**
  * From https://gist.github.com/alexfu/
  */
-public class DividerItemDecoration extends RecyclerView.ItemDecoration {
+public class DividerItemsDecoration extends RecyclerView.ItemDecoration {
 
     public static final int HORIZONTAL_LIST = LinearLayoutManager.HORIZONTAL;
     public static final int VERTICAL_LIST = LinearLayoutManager.VERTICAL;
@@ -23,7 +23,7 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
 
     private int mOrientation;
 
-    public DividerItemDecoration(Context context, int orientation) {
+    public DividerItemsDecoration(Context context, int orientation) {
         final TypedArray a = context.obtainStyledAttributes(ATTRS);
         mDivider = a.getDrawable(0);
         a.recycle();

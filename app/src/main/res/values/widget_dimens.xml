@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="widget_margin">8dp</dimen>
+    <dimen name="widget_padding">16dp</dimen>
+    <dimen name="text_size">20sp</dimen>
+    <dimen name="min_height">180dp</dimen>
+    <dimen name="min_width">180dp</dimen>
+    <dimen name="min_resize_height">140dp</dimen>
 </resources>

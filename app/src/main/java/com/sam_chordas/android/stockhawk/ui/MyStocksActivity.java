@@ -6,8 +6,6 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBar;
@@ -20,6 +18,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -28,11 +27,11 @@ import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
 import com.melnykov.fab.FloatingActionButton;
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.Utils;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
-import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
 import com.sam_chordas.android.stockhawk.service.StockResultReceiver;
 import com.sam_chordas.android.stockhawk.service.StockTaskService;
@@ -62,6 +61,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     RecyclerView recyclerView;
     @Bind(R.id.fab)
     FloatingActionButton fab;
+    @Bind(R.id.text_empty)
+    TextView emptyView;
     private StockResultReceiver mReceiver;
 
     @Override
@@ -74,21 +75,19 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         // GCMTaskService can only schedule tasks, they cannot execute immediately
         mReceiver = new StockResultReceiver(new Handler());
         mReceiver.setReceiver(this);
+        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
         mServiceIntent = new Intent(this, StockIntentService.class);
         if (savedInstanceState == null) {
             // Run the initialize task service so that some stocks appear upon an empty database
             mServiceIntent.putExtra("tag", "init");
-            if (isConnected()) {
+            if (Utils.isConnected(mContext)) {
                 startService(mServiceIntent);
-            } else {
-                networkToast();
             }
         }
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         RecyclerView.ItemDecoration itemDecoration = new
-                DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
+                DividerItemsDecoration(this, DividerItemsDecoration.VERTICAL_LIST);
         recyclerView.addItemDecoration(itemDecoration);
-        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
         mCursorAdapter = new QuoteCursorAdapter(this, null);
         recyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(this,
@@ -107,7 +106,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isConnected()) {
+                if (Utils.isConnected(mContext)) {
+                    if (recyclerView.getVisibility() == View.GONE) {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        emptyView.setVisibility(View.GONE);
+                    }
                     new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
                             .content(R.string.content_test)
                             .inputType(InputType.TYPE_CLASS_TEXT)
@@ -149,7 +152,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mItemTouchHelper.attachToRecyclerView(recyclerView);
 
         mTitle = getTitle();
-        if (isConnected()) {
+        if (Utils.isConnected(mContext)) {
             long period = 60L;
             long flex = 10L;
             String periodicTag = "periodic";
@@ -170,6 +173,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
 
     @Override
     public void onResume() {
@@ -231,6 +238,20 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mCursorAdapter.swapCursor(data);
         mCursor = data;
+        if(mCursor != null) {
+            if (mCursor.getCount() == 0 && !Utils.isConnected(mContext)) {
+                recyclerView.setVisibility(View.GONE);
+                emptyView.setText("It is empty here. You need to be connected to the Internet to add stocks.");
+                emptyView.setVisibility(View.VISIBLE);
+            } else if(!Utils.isConnected(mContext) && mCursor.getCount() != 0){
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyView.setVisibility(View.GONE);
+                Toast.makeText(mContext, "Stock Quotes might be out-dated! Connect to the internet to refresh", Toast.LENGTH_SHORT).show();
+            } else if(Utils.isConnected(mContext) && mCursor.getCount() != 0){
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyView.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override
@@ -238,17 +259,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mCursorAdapter.swapCursor(null);
     }
 
-    private boolean isConnected(){
-        ConnectivityManager cm =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-    }
-
 
     @Override
     public void onReceiveResult(int resultCode, Bundle resultData) {
-        if(resultCode==StockIntentService.STATUS_ERROR){
+        if (resultCode == StockIntentService.STATUS_ERROR) {
             String error = resultData.getString(Intent.EXTRA_TEXT);
             Toast.makeText(this, error, Toast.LENGTH_LONG).show();
         }

@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk;
+package com.sam_chordas.android.stockhawk.rest;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
