@@ -32,7 +32,7 @@
             android:layout_height="48dp"
             android:layout_gravity="center_vertical|end"
             android:background="@drawable/ic_action_refresh"
-            android:contentDescription="refresh"
+            android:contentDescription="@string/descr_refresh"
             android:scaleType="center"/>
     </LinearLayout>
 
@@ -55,7 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="empty"
+            android:text="@string/text_empty_widget"
             android:textColor="#ffffff"
             android:textSize="20sp"
             android:visibility="gone"/>

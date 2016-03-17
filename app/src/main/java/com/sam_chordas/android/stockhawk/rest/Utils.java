@@ -63,7 +63,7 @@ public class Utils {
             return "" + value;
         }
         int exp = (int) (Math.log(value) / Math.log(1000));
-        return String.format("%.1f %c", value / Math.pow(1000, exp), "kMGTPE".charAt(exp-1));
+        return String.format("%.1f %c", value / Math.pow(1000, exp), "KMGTPE".charAt(exp-1));
     }
 
     public static ContentProviderOperation buildBatchOperation(Quote quote) {
@@ -81,7 +81,7 @@ public class Utils {
         } else {
             builder.withValue(QuoteColumns.ISUP, 1);
         }
-        builder.withValue(QuoteColumns.SYMBOL, quote.getSymbol());
+        builder.withValue(QuoteColumns.SYMBOL, quote.getSymbol().toUpperCase());
         if (quote.getBid() != null) {
             builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(quote.getBid()));
         } else {
@@ -92,6 +92,11 @@ public class Utils {
                     quote.getChangeinPercent(), true));
         } else {
             builder.withValue(QuoteColumns.PERCENT_CHANGE, "-");
+        }
+        if (quote.getName() != null) {
+            builder.withValue(QuoteColumns.NAME, quote.getName());
+        } else {
+            builder.withValue(QuoteColumns.NAME, "-");
         }
         if (quote.getAverageDailyVolume() != null) {
             builder.withValue(QuoteColumns.AVG_DAILY_VOL, getReadableCount(quote.getAverageDailyVolume()));

@@ -10,6 +10,7 @@ import android.widget.RemoteViewsService;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
+import com.sam_chordas.android.stockhawk.rest.Utils;
 
 /**
  * Created by divyamary on 14-03-2016.
@@ -53,7 +54,12 @@ public class QuoteWidgetRemoteViewsService extends RemoteViewsService {
         public RemoteViews getViewAt(int position) {
             mCursor.moveToPosition(position);
             String symbol = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
-            String change = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.CHANGE));
+            String change;
+            if (Utils.showPercent){
+                change = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
+            } else {
+                change = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.CHANGE));
+            }
             String bidPrice = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE));
             int isUp = mCursor.getInt(mCursor.getColumnIndex("is_up"));
             RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(),

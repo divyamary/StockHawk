@@ -51,7 +51,7 @@ public class StockTaskService extends GcmTaskService{
           null, null);
       if (initQueryCursor.getCount() == 0 || initQueryCursor == null){
         // Init task. Populates DB with quotes for the symbols seen below
-        stockSymbol = "(\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")";
+        stockSymbol = "\"YHOO\",\"AAPL\",\"GOOG\",\"MSFT\")";
       } else if (initQueryCursor != null){
         DatabaseUtils.dumpCursor(initQueryCursor);
         initQueryCursor.moveToFirst();
@@ -74,22 +74,27 @@ public class StockTaskService extends GcmTaskService{
     StockClient stockClient = new StockClient();
     StockDetails stockDetails = stockClient.getStockQDetails(stockSymbol);
     if (stockDetails != null) {
-      result = GcmNetworkManager.RESULT_SUCCESS;
-      ContentValues contentValues = new ContentValues();
-      // update ISCURRENT to 0 (false) so new data is current
-      if (isUpdate) {
-        contentValues.put(QuoteColumns.ISCURRENT, 0);
-        mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
-                null, null);
-      }
-      try {
-        mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
-                Utils.quoteJsonToContentVals(stockDetails));
-        updateWidgets();
-      } catch (RemoteException e) {
-        e.printStackTrace();
-      } catch (OperationApplicationException e) {
-        e.printStackTrace();
+      if(params.getTag().equals("add") &&
+              stockDetails.getQuery().getResults().getQuote().get(0).getStockExchange()==null){
+        result = GcmNetworkManager.RESULT_FAILURE;
+      } else {
+        result = GcmNetworkManager.RESULT_SUCCESS;
+        ContentValues contentValues = new ContentValues();
+        // update ISCURRENT to 0 (false) so new data is current
+        if (isUpdate) {
+          contentValues.put(QuoteColumns.ISCURRENT, 0);
+          mContext.getContentResolver().update(QuoteProvider.Quotes.CONTENT_URI, contentValues,
+                  null, null);
+        }
+        try {
+          mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY,
+                  Utils.quoteJsonToContentVals(stockDetails));
+          updateWidgets();
+        } catch (RemoteException e) {
+          e.printStackTrace();
+        } catch (OperationApplicationException e) {
+          e.printStackTrace();
+        }
       }
     }
     return result;

@@ -1,19 +1,50 @@
 <resources>
-  <string name="app_name">Stock Hawk</string>
+    <string name="app_name">Stock Hawk</string>
 
-  <string name="action_example">Example action</string>
+    <string name="action_example">Example action</string>
 
-  <string name="action_settings">Settings</string>
-  <string name="action_change_units">Change Units</string>
-  <string name="symbol_search">Symbol Search</string>
-  <string name="content_test">Search for a Stock Symbol</string>
-  <string name="input_hint">FB</string>
-  <string name="input_prefill"></string>
-  <string name="widget_title">Today\'s Market</string>
-  <string name="network_toast">Uh-oh! This app requires an internet connection</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_change_units">Change Units</string>
+    <string name="symbol_search">Symbol Search</string>
+    <string name="content_test">Search for a Stock Symbol</string>
+    <string name="input_hint">FB</string>
+    <string name="input_prefill"></string>
+    <string name="widget_title">Today\'s Market</string>
+    <string name="network_toast">Uh-oh! This app requires an internet connection</string>
 
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="title_activity_stock_chart">StockChartActivity</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="text_open">Open</string>
+    <string name="text_high">DayHigh</string>
+    <string name="text_low">DayLow</string>
+    <string name="text_prev_close">Prev Close</string>
+    <string name="text_vol">Vol</string>
+    <string name="text_avg_vol">Avg Vol</string>
+    <string name="text_mkt_cap">MktCap</string>
+    <string name="text_eps">EPS</string>
+    <string name="text_div_yield">Div/Yield</string>
+    <string name="text_pe">P/E</string>
+    <string name="text_yr_high">YearHigh</string>
+    <string name="text_yr_low">YearLow</string>
+
+    <string name="text_one_day">1D</string>
+    <string name="text_one_week">1W</string>
+    <string name="text_one_month">1M</string>
+    <string name="text_three_months">3M</string>
+    <string name="text_six_months">6M</string>
+    <string name="text_one_year">1Y</string>
+    <string name="text_five_years">5Y</string>
+    <string name="text_max">MAX</string>
+
+    <string name="text_empty_widget">Stock quotes have not been added.</string>
+
+    <string name="descr_refresh">Refresh Widget</string>
+    <string name="descr_add_stock">Add Stock</string>
+    <string name="descr_one_day">1 day</string>
+    <string name="descr_one_week">1 week</string>
+    <string name="descr_one_month">1 month</string>
+    <string name="descr_three_months">3 months</string>
+    <string name="descr_six_months">6 months</string>
+    <string name="descr_one_year">1 year</string>
+    <string name="descr_five_years">5 years</string>
+    <string name="descr_max">Max</string>
+
 </resources>

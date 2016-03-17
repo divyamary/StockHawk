@@ -14,5 +14,4 @@ public class QuoteDatabase {
 
   @Table(QuoteColumns.class) public static final String QUOTES = "quotes";
 
-  @Table(QuoteInfoColumns.class) public static final String QUOTE_INFO = "quoteinfo";
 }

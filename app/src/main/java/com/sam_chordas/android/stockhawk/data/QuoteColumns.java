@@ -27,6 +27,8 @@ public class QuoteColumns {
   public static final String ISCURRENT = "is_current";
   //
   @DataType(DataType.Type.TEXT) @NotNull
+  public static final String NAME = "name";
+  @DataType(DataType.Type.TEXT) @NotNull
   public static final String OPEN = "open";
   @DataType(DataType.Type.TEXT) @NotNull
   public static final String AVG_DAILY_VOL = "avg_daily_vol";

@@ -9,19 +9,43 @@ import com.sam_chordas.android.stockhawk.R;
 
 public class StockChartActivity extends AppCompatActivity {
 
+    private static final String BUNDLE_STOCK_NAME="BUNDLE_STOCK_NAME";
+    private static final String STOCK_DETAIL_FRAGMENT = "STOCK_DETAIL_FRAGMENT";
+    public static final String ACTION_DATA_UPDATED =
+            "com.sam_chordas.android.stockhawk.ACTION_DATA_UPDATED";
+    private String stockSymbol;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        StockChartFragment stockChartFragment;
         if (savedInstanceState == null) {
             // During initial setup, plug in the details fragment.
-            StockChartFragment stockChartFragment = new StockChartFragment();
-            getSupportActionBar().setTitle(getIntent().getStringExtra("symbol"));
+            stockChartFragment = new StockChartFragment();
+            stockSymbol = getIntent().getStringExtra("symbol");
             stockChartFragment.setArguments(getIntent().getExtras());
-            getSupportFragmentManager().beginTransaction().replace(
-                    android.R.id.content, stockChartFragment).commit();
+        } else {
+            stockChartFragment = (StockChartFragment)getSupportFragmentManager().findFragmentByTag(STOCK_DETAIL_FRAGMENT);
+            stockSymbol = savedInstanceState.getString(BUNDLE_STOCK_NAME);
         }
+        if(stockSymbol!=null) {
+            getSupportActionBar().setTitle(stockSymbol);
+        }
+        getSupportFragmentManager().beginTransaction().replace(
+                android.R.id.content, stockChartFragment, STOCK_DETAIL_FRAGMENT).commitAllowingStateLoss();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString(BUNDLE_STOCK_NAME, stockSymbol);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        stockSymbol = savedInstanceState.getString(BUNDLE_STOCK_NAME);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -36,6 +36,7 @@ import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.model.Series;
 import com.sam_chordas.android.stockhawk.model.StockChart;
+import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.service.StockClient;
 import com.squareup.otto.Subscribe;
 
@@ -56,6 +57,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         OnChartValueSelectedListener {
 
     private static final String BUNDLE_CHART_RESPONSE = "BUNDLE_CHART_RESPONSE";
+    private static final String BUNDLE_RANGE_TYPE = "BUNDLE_RANGE_TYPE";
+    private static final String BUNDLE_DATE_FORMAT = "BUNDLE_DATE_FORMAT";
     private static final int CHART_LOADER = 1;
     private Cursor mCursor;
     private boolean mIsBusRegistered;
@@ -110,6 +113,10 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     TextView peTextView;
     @Bind(R.id.text_prevclose)
     TextView prevCloseTextView;
+    @Bind(R.id.name)
+    TextView nameTextView;
+    @Bind(R.id.change)
+    TextView changeTextView;
     private boolean mIsViewRestored;
 
     public StockChartFragment() {
@@ -141,6 +148,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
 
         if(savedInstanceState!=null){
             stockChart = savedInstanceState.getParcelable(BUNDLE_CHART_RESPONSE);
+            range = savedInstanceState.getString(BUNDLE_RANGE_TYPE);
+            dateFormat = savedInstanceState.getString(BUNDLE_DATE_FORMAT);
         } else {
             mStockClient.getStockChart(stockSymbol, range);
         }
@@ -148,7 +157,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         mChart.setDrawGridBackground(false);
         // no description text
         mChart.setDescription("");
-        mChart.setNoDataTextDescription("Loading...");
+        //mChart.setNoDataTextDescription("Loading...");
         // enable touch gestures
         mChart.setTouchEnabled(true);
         // enable scaling and dragging
@@ -212,6 +221,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(BUNDLE_CHART_RESPONSE, stockChart);
+        outState.putString(BUNDLE_RANGE_TYPE, range);
+        outState.putString(BUNDLE_DATE_FORMAT, dateFormat);
     }
 
     @Override
@@ -219,6 +230,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         super.onViewStateRestored(savedInstanceState);
         if(savedInstanceState!=null){
             stockChart = savedInstanceState.getParcelable(BUNDLE_CHART_RESPONSE);
+            range = savedInstanceState.getString(BUNDLE_RANGE_TYPE);
+            dateFormat = savedInstanceState.getString(BUNDLE_DATE_FORMAT);
             mIsViewRestored = true;
         }
     }
@@ -252,7 +265,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
             xVals.add((i) + "");
         }*/
 
-        ArrayList<Entry> yVals = new ArrayList<Entry>();
+        ArrayList<Entry> yVals = new ArrayList<>();
 
         for (int i = 0; i < range.size(); i++) {
             Double val = range.get(i);
@@ -277,7 +290,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         set1.setFillDrawable(drawable);
         set1.setDrawFilled(true);
 
-        ArrayList<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
+        ArrayList<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(set1); // add the datasets
 
         // create a data object with the datasets
@@ -291,7 +304,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     }
 
 
-    public LinkedList getStockClosingVals(StockChart stockChart) {
+    private LinkedList<Double> getStockClosingVals(StockChart stockChart) {
         LinkedList<Double> closingValues = new LinkedList<>();
         listLabels = new ArrayList<>();
         seriesSize = stockChart.getSeries().size();
@@ -320,16 +333,16 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getContext(), QuoteProvider.Quotes.CONTENT_URI,
                 null,
-                QuoteColumns.SYMBOL + " = ?",
-                new String[]{stockSymbol},
+                QuoteColumns.SYMBOL + " = ? AND " + QuoteColumns.ISCURRENT + "=?",
+                new String[]{stockSymbol, "1"},
                 null);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mCursor = data;
-        if (mCursor != null) {
-            mCursor.moveToFirst();
+        if (mCursor != null && mCursor.moveToFirst()) {
+            nameTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.NAME)));
             bidTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
             openTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.OPEN)));
             highTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.DAYS_HIGH)));
@@ -343,6 +356,16 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
             avgVolTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.AVG_DAILY_VOL)));
             peTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PE_RATIO)));
             prevCloseTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PREV_CLOSE)));
+            if (mCursor.getInt(mCursor.getColumnIndex(QuoteColumns.ISUP)) == 1) {
+                changeTextView.setTextColor(getResources().getColor(R.color.material_green_700));
+            } else {
+                changeTextView.setTextColor(getResources().getColor(R.color.material_red_700));
+            }
+            if (Utils.showPercent){
+                changeTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE)));
+            } else{
+                changeTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.CHANGE)));
+            }
         }
     }
 
@@ -355,6 +378,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     @Override
     public void onClick(View view) {
         int viewId = view.getId();
+        changeButtonTextColor(viewId);
         switch (viewId) {
             case R.id.button_1D: {
                 dateFormat = "h:mm";
@@ -403,6 +427,111 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
             }
         }
         mStockClient.getStockChart(stockSymbol, range);
+    }
+
+    private void changeButtonTextColor(int viewId) {
+        switch(viewId){
+            case R.id.button_1D:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_blue_700));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                break;
+            }
+            case R.id.button_1W:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_blue_700));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                break;
+            }
+            case R.id.button_1M:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_blue_700));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                break;
+            }
+            case R.id.button_3M:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_blue_700));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                break;
+            }
+            case R.id.button_6M:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_blue_700));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                break;
+            }
+            case R.id.button_1Y:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_blue_700));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                break;
+            }
+            case R.id.button_5Y:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_blue_700));
+                maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                break;
+            }
+            case R.id.button_max:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                maxButton.setTextColor(getResources().getColor(R.color.material_blue_700));
+                break;
+            }
+            default:{
+                oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                threeMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                sixMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                oneYearButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                fiveYearsButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
+                break;
+            }
+
+        }
     }
 
     @Override

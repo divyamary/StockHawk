@@ -50,42 +50,5 @@ public class QuoteProvider {
     }
   }
 
-    @TableEndpoint(table = QuoteDatabase.QUOTE_INFO)
-    public static class QuoteInfo{
 
-        @ContentUri(
-                path = Path.QUOTE_INFO,
-                type = "vnd.android.cursor.item/quoteinfo"
-        )
-        public static final Uri CONTENT_URI = buildUri(Path.QUOTE_INFO);
-
-        @InexactContentUri(
-                name = "QUOTE_ID",
-                path = Path.QUOTE_INFO + "/*",
-                type = "vnd.android.cursor.item/quoteinfo",
-                whereColumn = QuoteColumns.SYMBOL,
-                pathSegment = 1
-        )
-        public static Uri withSymbol(String symbol){
-            return buildUri(Path.QUOTE_INFO, symbol);
-        }
-    }
-
-    @TableEndpoint(table = QuoteDatabase.QUOTE_INFO)
-    public static class QuoteJoin {
-
-        @InexactContentUri(
-                name = "QUOTE_JOIN",
-                path = Path.QUOTE_INFO + "/#",
-                type = "vnd.example.item/" + "quotejoin",
-                join = "JOIN " + QuoteDatabase.QUOTES + " ON " + QuoteDatabase.QUOTES + "." +
-                        QuoteColumns.SYMBOL + " = " + QuoteDatabase.QUOTE_INFO + "." + QuoteInfoColumns.SYMBOL
-                        ,
-                whereColumn = QuoteColumns.SYMBOL,
-                pathSegment = 1
-        )
-        public static final Uri getQuoteJoinWithSymbol(String symbol) {
-            return buildUri(Path.QUOTE_INFO, symbol);
-        }
-    }
 }

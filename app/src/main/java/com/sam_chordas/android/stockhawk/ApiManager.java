@@ -42,8 +42,7 @@ public class ApiManager {
                 .addConverterFactory(JsonpGsonConverterFactory.create())
                 .client(httpClient)
                 .build();
-        StockChartApi stockChartApi = retrofit.create(StockChartApi.class);
-        return stockChartApi;
+        return retrofit.create(StockChartApi.class);
     }
 
     public static YQLFinanceAPI getStockApi() {
@@ -61,8 +60,7 @@ public class ApiManager {
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(httpClient)
                 .build();
-        YQLFinanceAPI yqlFinanceAPI = retrofit.create(YQLFinanceAPI.class);
-        return yqlFinanceAPI;
+        return retrofit.create(YQLFinanceAPI.class);
     }
 
     /**

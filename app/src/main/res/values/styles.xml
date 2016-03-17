@@ -9,21 +9,22 @@
 
   <style name="PercentChangeTextStyle">
     <item name="android:textSize">20sp</item>
-    <item name="android:textColor">#212121</item>
-    <item name="android:textStyle">bold</item>
+    <item name="android:textColor">@color/material_gray_900</item>
   </style>
   <style name="BidPriceTextStyle">
     <item name="android:textSize">20sp</item>
   </style>
   <style name="StockSymbolTextStyle">
     <item name="android:textSize">25sp</item>
+    <item name="android:textColor">@color/material_gray_900</item>
     <item name="android:textAllCaps">true</item>
+    <item name="android:textStyle">bold</item>
   </style>
 
   <!--Widget styles-->
   <style name="WidgetPercentChangeTextStyle">
     <item name="android:textSize">14sp</item>
-    <item name="android:textColor">#212121</item>
+    <item name="android:textColor">@color/material_gray_900</item>
     <item name="android:textStyle">bold</item>
   </style>
   <style name="WidgetBidPriceTextStyle">

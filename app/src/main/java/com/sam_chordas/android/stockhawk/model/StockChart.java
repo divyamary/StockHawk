@@ -20,13 +20,13 @@ public class StockChart implements Parcelable {
     private Timestamp Timestamp;
     @SerializedName("labels")
     @Expose
-    private List<Long> labels = new ArrayList<Long>();
+    private List<Long> labels = new ArrayList<>();
     @SerializedName("ranges")
     @Expose
     private Ranges ranges;
     @SerializedName("series")
     @Expose
-    private List<Series> series = new ArrayList<Series>();
+    private List<Series> series = new ArrayList<>();
 
     protected StockChart(Parcel in) {
     }

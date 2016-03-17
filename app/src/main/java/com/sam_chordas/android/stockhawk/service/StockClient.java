@@ -51,15 +51,13 @@ public class StockClient {
     }
 
     public StockDetails getStockQDetails(String stockSymbol) {
-        //"alternate_ranges": ["5d","1m","3m","6m","1y","2y","5y","my"]
         StockDetails stockDetails = null;
         String query = "yql?q=select * from yahoo.finance.quotes where symbol " + "in (" + stockSymbol + "";
         Log.d("ENCODED URL:", query);
         String format = "json";
-        String diagnostics = "true";
         String env = "store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
         String callback = "";
-        Call<StockDetails> call = ApiManager.getStockApi().getStockData(query, format, diagnostics, env, callback);
+        Call<StockDetails> call = ApiManager.getStockApi().getStockData(query, format, env, callback);
         try {
             stockDetails = call.execute().body();
         } catch (IOException e) {
