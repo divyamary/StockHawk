@@ -1,9 +1,11 @@
 package com.sam_chordas.android.stockhawk.service;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.model.StockChart;
 import com.sam_chordas.android.stockhawk.model.StockDetails;
 import com.sam_chordas.android.stockhawk.rest.ApiManager;
@@ -24,6 +26,11 @@ public class StockClient {
 
     final String LOG_TAG = StockClient.class.getSimpleName();
     private Bus stockBus = StockBus.getInstance();
+    private Context context;
+
+    public StockClient(Context context) {
+        this.context = context;
+    }
 
     public void getStockChart(String stockSymbol, String range) {
         Log.d(LOG_TAG, "Stock Client");
@@ -47,7 +54,7 @@ public class StockClient {
             public void onFailure(Call<StockChart> call, Throwable throwable) {
                 Log.e(LOG_TAG, "Retrofit call Failure" + throwable.getMessage());
                 ErrorBundle errorBundle = ErrorBundle.adapt(throwable);
-                stockBus.post(new ErrorResultEvent(errorBundle));
+                stockBus.post(new ErrorResultEvent(errorBundle, "ChartAPI"));
             }
         });
 
@@ -65,7 +72,7 @@ public class StockClient {
             stockDetails = call.execute().body();
             if (stockDetails != null && stockDetails.getQuery().getCount() == 1 &&
                     stockDetails.getQuery().getResults().getQuote().get(0).getStockExchange() == null) {
-                final String message = "This ticker could not be found.";
+                final String message = context.getString(R.string.error_stock_name);
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.post(new Runnable() {
                     @Override
@@ -81,7 +88,7 @@ public class StockClient {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    stockBus.post(new ErrorResultEvent(errorBundle));
+                    stockBus.post(new ErrorResultEvent(errorBundle, "YQL"));
                 }
             });
         }

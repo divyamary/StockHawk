@@ -6,12 +6,14 @@ package com.sam_chordas.android.stockhawk.rest;
 public class ErrorResultEvent {
 
     private String message;
+    private String endpoint;
 
     private ErrorBundle mErrorBundle;
 
 
-    public ErrorResultEvent(ErrorBundle errorBundle) {
+    public ErrorResultEvent(ErrorBundle errorBundle, String endpoint) {
         this.mErrorBundle = errorBundle;
+        this.endpoint = endpoint;
     }
 
     public ErrorResultEvent(String message) {
@@ -32,5 +34,13 @@ public class ErrorResultEvent {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 }

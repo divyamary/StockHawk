@@ -100,10 +100,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     @Override
                     public void onItemClick(View v, int position) {
                         mCursor.moveToPosition(position);
-                        Intent stockChartIntent = new Intent(getBaseContext(), StockDetailsActivity.class);
+                        Intent stockDetailsIntent = new Intent(getBaseContext(), StockDetailsActivity.class);
                         String stockSymbol = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
-                        stockChartIntent.putExtra("symbol", stockSymbol);
-                        startActivity(stockChartIntent);
+                        stockDetailsIntent.putExtra("symbol", stockSymbol);
+                        startActivity(stockDetailsIntent);
                     }
                 }));
         recyclerView.setAdapter(mCursorAdapter);
@@ -265,12 +265,12 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         if(mCursor != null) {
             if (mCursor.getCount() == 0 && !Utils.isConnected(mContext)) {
                 recyclerView.setVisibility(View.GONE);
-                emptyView.setText("It is empty here. You need to be connected to the Internet to add stocks.");
+                emptyView.setText(getString(R.string.empty_stock_list));
                 emptyView.setVisibility(View.VISIBLE);
             } else if(!Utils.isConnected(mContext) && mCursor.getCount() != 0){
                 recyclerView.setVisibility(View.VISIBLE);
                 emptyView.setVisibility(View.GONE);
-                Toast.makeText(mContext, "Stock Quotes might be out-dated! Connect to the internet to refresh", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, getString(R.string.outdated_stocks), Toast.LENGTH_SHORT).show();
             } else if(Utils.isConnected(mContext) && mCursor.getCount() != 0){
                 recyclerView.setVisibility(View.VISIBLE);
                 emptyView.setVisibility(View.GONE);
@@ -287,11 +287,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     public void onRetrofitFailure(ErrorResultEvent event) {
         ErrorBundle errorBundle = event.getErrorBundle();
         String errorMessage = event.getMessage();
-        if (errorBundle != null && errorBundle.getAppMessage() != null) {
+        String endpoint = event.getEndpoint();
+        if (errorBundle != null && errorBundle.getAppMessage() != null
+                && endpoint != null && endpoint.equals("YQL")) {
             if (errorBundle.getAppMessage().equals("Unknown exception")) {
-                Toast.makeText(this, "There was an error fetching the stocks. Try again.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getResources().getString(R.string.stock_fetch_error), Toast.LENGTH_LONG).show();
             } else if (errorBundle.getAppMessage().equals("Socket timeout")) {
-                Toast.makeText(this, "Timed out fetching the stock. Try again.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getResources().getString(R.string.stock_timeout_error), Toast.LENGTH_LONG).show();
             }
         }
         if (errorMessage != null) {

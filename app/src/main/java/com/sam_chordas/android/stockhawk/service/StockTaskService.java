@@ -68,7 +68,7 @@ public class StockTaskService extends GcmTaskService{
       stockSymbol = "\"" + stockInput + "\")";
     }
     int result = GcmNetworkManager.RESULT_FAILURE;
-    StockClient stockClient = new StockClient();
+    StockClient stockClient = new StockClient(mContext);
     StockDetails stockDetails = stockClient.getStockQDetails(stockSymbol);
     if (stockDetails != null) {
       if (stockDetails.getQuery().getCount() == 1 &&

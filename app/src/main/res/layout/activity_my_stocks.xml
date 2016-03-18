@@ -36,6 +36,7 @@
         android:layout_margin="@dimen/layout_margin"
         android:gravity="center"
         android:visibility="gone"/>
+    </LinearLayout>
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/fab"
@@ -53,6 +54,5 @@
         fab:layout_anchor="recycler_view"
         fab:layout_anchorGravity="bottom | end"
         />
-    </LinearLayout>
 
 </FrameLayout>

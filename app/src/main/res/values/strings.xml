@@ -10,8 +10,14 @@
     <string name="input_hint" translatable="false">FB</string>
     <string name="input_prefill"></string>
     <string name="widget_title">Today\'s Market</string>
-    <string name="error_stock_name">This ticker does not exist</string>
+    <string name="empty_stock_list">It is empty here. You need to be connected to the Internet to add stocks.</string>
+    <string name="outdated_stocks">Stock Quotes might be out-dated! Connect to the internet to refresh</string>
+    <string name="error_stock_name">This stock ticker could not be found.</string>
     <string name="network_toast">Uh-oh! This app requires an internet connection</string>
+    <string name="stock_fetch_error">There was an error fetching stocks. Try again</string>
+    <string name="stock_timeout_error">Timed out fetching stocks. Try again later</string>
+    <string name="chart_fetch_error">Connect to the internet to view the stock chart</string>
+    <string name="chart_timeout_error">Timed out fetching the stock chart. Try again later</string>
 
     <string name="text_open">Open</string>
     <string name="text_high">DayHigh</string>
@@ -49,5 +55,6 @@
     <string name="descr_max">Max</string>
     <string name="empty_reviews_text">No stocks have been added. You need to be connected to the Internet to add stocks.</string>
     <string name="descr_stock_chart">Stock Chart</string>
+    <string name="descr_back">Back</string>
 
 </resources>

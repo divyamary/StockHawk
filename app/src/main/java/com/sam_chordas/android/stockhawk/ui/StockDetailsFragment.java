@@ -149,10 +149,11 @@ public class StockDetailsFragment extends Fragment implements
         View rootView = inflater.inflate(R.layout.fragment_stock_chart, container, false);
         ButterKnife.bind(this, rootView);
         stockSymbol = getArguments().getString("symbol");
-        mStockClient = new StockClient();
+        mStockClient = new StockClient(getContext());
         if (savedInstanceState != null) {
             stockChart = savedInstanceState.getParcelable(BUNDLE_CHART_RESPONSE);
             range = savedInstanceState.getString(BUNDLE_RANGE_TYPE);
+            retainButtonTextColor(range);
             dateFormat = savedInstanceState.getString(BUNDLE_DATE_FORMAT);
             stockSymbol = savedInstanceState.getString(BUNDLE_STOCK_SYMBOL);
         } else {
@@ -207,6 +208,40 @@ public class StockDetailsFragment extends Fragment implements
     public void onDestroy() {
         unregisterBus();
         super.onDestroy();
+    }
+
+    private void retainButtonTextColor(String range) {
+        int viewId;
+        switch (range) {
+            case "1d":
+                viewId = R.id.button_1D;
+                break;
+            case "7d":
+                viewId = R.id.button_1W;
+                break;
+            case "1m":
+                viewId = R.id.button_1M;
+                break;
+            case "3m":
+                viewId = R.id.button_3M;
+                break;
+            case "6m":
+                viewId = R.id.button_6M;
+                break;
+            case "1y":
+                viewId = R.id.button_1Y;
+                break;
+            case "5y":
+                viewId = R.id.button_5Y;
+                break;
+            case "max":
+                viewId = R.id.button_max;
+                break;
+            default:
+                viewId = R.id.button_1D;
+                break;
+        }
+        changeButtonTextColor(viewId);
     }
 
     private void setUpChart() {
@@ -586,11 +621,13 @@ public class StockDetailsFragment extends Fragment implements
     @Subscribe
     public void onRetrofitFailure(ErrorResultEvent event) {
         ErrorBundle errorBundle = event.getErrorBundle();
-        if (errorBundle != null && errorBundle.getAppMessage() != null) {
+        String endpoint = event.getEndpoint();
+        if (errorBundle != null && errorBundle.getAppMessage() != null
+                && endpoint != null && endpoint.equals("ChartAPI")) {
             if (errorBundle.getAppMessage().equals("Unknown exception")) {
-                Toast.makeText(getContext(), "There was an error fetching the stock chart.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getResources().getString(R.string.chart_fetch_error), Toast.LENGTH_SHORT).show();
             } else if (errorBundle.getAppMessage().equals("Socket timeout")) {
-                Toast.makeText(getContext(), "Timed out fetching the stock chart. Try again.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getResources().getString(R.string.chart_timeout_error), Toast.LENGTH_SHORT).show();
             }
         }
     }

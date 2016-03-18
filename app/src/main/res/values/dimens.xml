@@ -12,13 +12,15 @@
   <dimen name="item_padding">16dp</dimen>
   <dimen name="item_height">72dp</dimen>
   <dimen name="chart_horizontal_margin">16dp</dimen>
-  <dimen name="chart_top_margin">8dp</dimen>
+  <dimen name="chart_top_margin">16dp</dimen>
   <dimen name="chart_height">250dp</dimen>
-
+  <dimen name="title_margin">8dp</dimen>
+  <dimen name="button_margin">16dp</dimen>
   <dimen name="bid_padding">10dp</dimen>
   <dimen name="change_padding">3dp</dimen>
   <dimen name="stock_name_width">100dp</dimen>
   <dimen name="marker_margin_top">7dp</dimen>
   <dimen name="marker_margin_horiz">5dp</dimen>
   <dimen name="marker_text_size">12sp</dimen>
+  <dimen name="inset">0dp</dimen>
 </resources>

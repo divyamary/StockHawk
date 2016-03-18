@@ -107,8 +107,8 @@
     <orderEntry type="library" exported="" name="schematic-0.6.3" level="project" />
     <orderEntry type="library" exported="" name="play-services-base-8.4.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-basement-8.4.0" level="project" />
-    <orderEntry type="library" exported="" name="butterknife-7.0.1" level="project" />
     <orderEntry type="library" exported="" name="converter-gson-2.0.0-beta4" level="project" />
+    <orderEntry type="library" exported="" name="butterknife-7.0.1" level="project" />
     <orderEntry type="library" exported="" name="logging-interceptor-3.2.0" level="project" />
     <orderEntry type="library" exported="" name="okhttp-3.2.0" level="project" />
     <orderEntry type="library" exported="" name="otto-1.3.8" level="project" />

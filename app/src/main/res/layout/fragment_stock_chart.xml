@@ -20,41 +20,64 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             android:elevation="4dp"
+            app:contentInsetLeft="@dimen/inset"
+            app:contentInsetStart="@dimen/inset"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             >
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:layout_height="match_parent">
 
                 <ImageButton
                     android:id="@+id/button_back"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerInParent="true"
+                    android:layout_marginEnd="@dimen/button_margin"
+                    android:layout_marginLeft="@dimen/button_margin"
+                    android:layout_marginRight="@dimen/button_margin"
+                    android:layout_marginStart="@dimen/button_margin"
                     android:background="@drawable/abc_ic_ab_back_mtrl_am_alpha"
-                    android:contentDescription="back button"></ImageButton>
+                    android:contentDescription="@string/descr_back">
+                </ImageButton>
 
                 <TextView
                     android:id="@+id/text_toolbar_title"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/title_margin"
+                    android:layout_marginRight="@dimen/title_margin"
+                    android:layout_toEndOf="@+id/button_back"
+                    android:layout_toRightOf="@+id/button_back"
                     android:layout_weight="1"
-                    android:breakStrategy="high_quality"
                     android:fontFamily="sans-serif-condensed"
-                    android:gravity="center"
                     android:textAllCaps="true"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
                     android:textColor="@android:color/white"
                     android:textStyle="bold"
+                    tools:text="GOOG"/>
+
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/text_toolbar_title"
+                    android:layout_toEndOf="@+id/text_toolbar_title"
+                    android:layout_toRightOf="@+id/text_toolbar_title"
+                    android:layout_weight="2"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-condensed"
+                    android:singleLine="true"
+                    android:textColor="@android:color/white"
+                    tools:text="Goldman Sachs"
                     />
 
-            </LinearLayout>
+            </RelativeLayout>
 
         </android.support.v7.widget.Toolbar>
 
@@ -64,6 +87,7 @@
             android:layout_marginBottom="@dimen/layout_margin"
             android:layout_marginLeft="@dimen/layout_margin"
             android:layout_marginRight="@dimen/layout_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:orientation="vertical">
 
             <LinearLayout
@@ -96,20 +120,21 @@
 
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/name_bottom_margin"
-                android:fontFamily="sans-serif-condensed"
-                android:textColor="@color/material_gray_900"
-                tools:text="Goldman Sachs"
-                />
+            <!-- <TextView
+                 android:id="@+id/name"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginBottom="@dimen/name_bottom_margin"
+                 android:fontFamily="sans-serif-condensed"
+                 android:textColor="@color/material_gray_900"
+                 tools:text="Goldman Sachs"
+                 />-->
 
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
