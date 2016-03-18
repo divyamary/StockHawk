@@ -12,6 +12,8 @@ import retrofit2.Retrofit;
 
 
 /**
+ * Credit:
+ * Created by jamesanto on 12/22/15.
  * From http://stackoverflow.com/questions/34421851/retrofit-how-to-parse-this-response
  */
 public final class JsonpGsonConverterFactory extends Converter.Factory {

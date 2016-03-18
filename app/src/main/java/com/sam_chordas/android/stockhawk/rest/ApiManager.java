@@ -35,7 +35,6 @@ public class ApiManager {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient httpClient = new OkHttpClient.Builder().addInterceptor(logging).build();
-        //httpClient.interceptors().add(logging);
         //We use a custom JsonpGsonConverterFactory because response returned is in JSONP format.
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(CHART_BASE_URL)
@@ -54,7 +53,6 @@ public class ApiManager {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient httpClient = new OkHttpClient.Builder().addInterceptor(logging).build();
-        //httpClient.interceptors().add(logging);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(YQL_FINANCE_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(gson))

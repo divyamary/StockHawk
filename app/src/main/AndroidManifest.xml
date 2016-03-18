@@ -64,7 +64,8 @@
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <activity
-            android:name=".ui.StockChartActivity">
+            android:name=".ui.StockDetailsActivity"
+            android:parentActivityName=".ui.MyStocksActivity">
         </activity>
     </application>
 

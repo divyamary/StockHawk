@@ -11,6 +11,8 @@ import retrofit2.Converter;
 
 
 /**
+ * Credit:
+ * Created by jamesanto on 12/22/15.
  * From http://stackoverflow.com/questions/34421851/retrofit-how-to-parse-this-response
  */
 public class JsonpGsonResponseBodyConverter<T> implements Converter<ResponseBody, T> {
@@ -28,7 +30,6 @@ public class JsonpGsonResponseBodyConverter<T> implements Converter<ResponseBody
         char[] chars = new char[100];
         do {
             charsRead = reader.read(chars, 0, chars.length);
-            //if we have valid chars, append them to end of string.
             if (charsRead > 0)
                 builder.append(chars, 0, charsRead);
         } while (charsRead > 0);

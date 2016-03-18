@@ -8,9 +8,9 @@ import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.sam_chordas.android.stockhawk.R;
+import com.sam_chordas.android.stockhawk.Utils;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.Utils;
 
 /**
  * Created by divyamary on 14-03-2016.
@@ -37,6 +37,18 @@ public class QuoteWidgetRemoteViewsService extends RemoteViewsService {
             // onCreate(), we do nothing here.
         }
 
+        public void onDataSetChanged() {
+            // Refresh the cursor
+            if (mCursor != null) {
+                mCursor.close();
+            }
+            mCursor = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
+                    new String[]{QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
+                            QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
+                    QuoteColumns.ISCURRENT + " = ?",
+                    new String[]{"1"},
+                    null);
+        }
 
         @Override
         public void onDestroy() {
@@ -68,17 +80,14 @@ public class QuoteWidgetRemoteViewsService extends RemoteViewsService {
             remoteViews.setTextViewText(R.id.bid_price,bidPrice);
             remoteViews.setTextViewText(R.id.change, change);
             if(isUp == 1) {
-                //remoteViews.setImageViewResource(R.id.change, R.drawable.percent_change_pill_green);
                 remoteViews.setInt(R.id.change, "setBackgroundResource", R.drawable.percent_change_pill_green);
             } else {
-                //remoteViews.setImageViewResource(R.id.change, R.drawable.percent_change_pill_red);
                 remoteViews.setInt(R.id.change, "setBackgroundResource", R.drawable.percent_change_pill_red);
             }
-            // Set the click intent so that we can handle it and show a toast message
             final Intent fillInIntent = new Intent();
             final Bundle extras = new Bundle();
             extras.putString(QuoteWidgetProvider.EXTRA_QUOTE, symbol);
-            fillInIntent.putExtras(extras);
+            fillInIntent.putExtra("symbol", symbol);
             remoteViews.setOnClickFillInIntent(R.id.widget_list_item, fillInIntent);
             return remoteViews;
         }
@@ -101,19 +110,6 @@ public class QuoteWidgetRemoteViewsService extends RemoteViewsService {
         @Override
         public boolean hasStableIds() {
             return true;
-        }
-
-        public void onDataSetChanged() {
-            // Refresh the cursor
-            if (mCursor != null) {
-                mCursor.close();
-            }
-            mCursor = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                    new String[]{ QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
-                            QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
-                    QuoteColumns.ISCURRENT + " = ?",
-                    new String[]{"1"},
-                    null);
         }
     }
 

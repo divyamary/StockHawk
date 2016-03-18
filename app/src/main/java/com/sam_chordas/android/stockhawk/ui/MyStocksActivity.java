@@ -7,11 +7,11 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
 import android.view.Gravity;
@@ -30,51 +30,56 @@ import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.Utils;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
-import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
-import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
+import com.sam_chordas.android.stockhawk.recyclerview.QuoteCursorAdapter;
+import com.sam_chordas.android.stockhawk.recyclerview.RecyclerViewItemClickListener;
+import com.sam_chordas.android.stockhawk.rest.ErrorBundle;
+import com.sam_chordas.android.stockhawk.rest.ErrorResultEvent;
+import com.sam_chordas.android.stockhawk.rest.StockBus;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
-import com.sam_chordas.android.stockhawk.service.StockResultReceiver;
 import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
+import com.squareup.otto.Subscribe;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
-        StockResultReceiver.Receiver {
+public class MyStocksActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
 
-    /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
-     */
-    private CharSequence mTitle;
-    private Intent mServiceIntent;
-    private ItemTouchHelper mItemTouchHelper;
     private static final int CURSOR_LOADER_ID = 0;
-    private QuoteCursorAdapter mCursorAdapter;
-    private Context mContext;
-    private Cursor mCursor;
     @Bind(R.id.recycler_view)
     RecyclerView recyclerView;
     @Bind(R.id.fab)
     FloatingActionButton fab;
     @Bind(R.id.text_empty)
     TextView emptyView;
-    private StockResultReceiver mReceiver;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+    /**
+     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
+     */
+    private CharSequence mTitle;
+    private Intent mServiceIntent;
+    private ItemTouchHelper mItemTouchHelper;
+    private QuoteCursorAdapter mCursorAdapter;
+    private Context mContext;
+    private Cursor mCursor;
+    private boolean mIsBusRegistered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        registerBus();
         mContext = this;
         setContentView(R.layout.activity_my_stocks);
         ButterKnife.bind(this);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
-        mReceiver = new StockResultReceiver(new Handler());
-        mReceiver.setReceiver(this);
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
         mServiceIntent = new Intent(this, StockIntentService.class);
         if (savedInstanceState == null) {
@@ -95,7 +100,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     @Override
                     public void onItemClick(View v, int position) {
                         mCursor.moveToPosition(position);
-                        Intent stockChartIntent = new Intent(getBaseContext(), StockChartActivity.class);
+                        Intent stockChartIntent = new Intent(getBaseContext(), StockDetailsActivity.class);
                         String stockSymbol = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
                         stockChartIntent.putExtra("symbol", stockSymbol);
                         startActivity(stockChartIntent);
@@ -121,7 +126,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                     // in the DB and proceed accordingly
                                     Cursor cursor = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
                                             new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
-                                            new String[]{input.toString()}, null);
+                                            new String[]{input.toString().toUpperCase()}, null);
                                     if (cursor.getCount() != 0) {
                                         Toast toast =
                                                 Toast.makeText(MyStocksActivity.this, "This stock is already saved!",
@@ -132,7 +137,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                     } else {
                                         // Add the stock to DB
                                         mServiceIntent.putExtra("tag", "add");
-                                        mServiceIntent.putExtra("receiver", mReceiver);
                                         mServiceIntent.putExtra("symbol", input.toString());
                                         startService(mServiceIntent);
                                     }
@@ -153,7 +157,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
 
         mTitle = getTitle();
         if (Utils.isConnected(mContext)) {
-            long period = 60L;
+            long period = 3600L;
             long flex = 10L;
             String periodicTag = "periodic";
 
@@ -174,14 +178,34 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    public void onDestroy() {
+        unregisterBus();
+        super.onDestroy();
+    }
+
+    private void registerBus() {
+        if (!mIsBusRegistered) {
+            StockBus.getInstance().register(this);
+            mIsBusRegistered = true;
+        }
+    }
+
+    private void unregisterBus() {
+        if (mIsBusRegistered) {
+            StockBus.getInstance().unregister(this);
+            mIsBusRegistered = false;
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     public void networkToast() {
@@ -259,12 +283,19 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mCursorAdapter.swapCursor(null);
     }
 
-
-    @Override
-    public void onReceiveResult(int resultCode, Bundle resultData) {
-        if (resultCode == StockIntentService.STATUS_ERROR) {
-            String error = resultData.getString(Intent.EXTRA_TEXT);
-            Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+    @Subscribe
+    public void onRetrofitFailure(ErrorResultEvent event) {
+        ErrorBundle errorBundle = event.getErrorBundle();
+        String errorMessage = event.getMessage();
+        if (errorBundle != null && errorBundle.getAppMessage() != null) {
+            if (errorBundle.getAppMessage().equals("Unknown exception")) {
+                Toast.makeText(this, "There was an error fetching the stocks. Try again.", Toast.LENGTH_LONG).show();
+            } else if (errorBundle.getAppMessage().equals("Socket timeout")) {
+                Toast.makeText(this, "Timed out fetching the stock. Try again.", Toast.LENGTH_LONG).show();
+            }
+        }
+        if (errorMessage != null) {
+            Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
         }
     }
 }

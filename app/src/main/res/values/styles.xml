@@ -1,40 +1,55 @@
 <resources>
 
-  <!-- Base application theme. -->
-  <style name="AppTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
-      <item name="colorPrimary">@color/material_blue_500</item>
-      <item name="colorPrimaryDark">@color/material_blue_700</item>
-    <!-- Customize your theme here. -->
-  </style>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="colorPrimary">@color/material_blue_500</item>
+        <item name="colorPrimaryDark">@color/material_blue_700</item>
+        <!-- Customize your theme here. -->
+    </style>
 
-  <style name="PercentChangeTextStyle">
-    <item name="android:textSize">20sp</item>
-    <item name="android:textColor">@color/material_gray_900</item>
-  </style>
-  <style name="BidPriceTextStyle">
-    <item name="android:textSize">20sp</item>
-    <item name="android:textColor">@color/material_gray_900</item>
-    <item name="android:textStyle">bold</item>
-  </style>
-  <style name="StockSymbolTextStyle">
-    <item name="android:textSize">22sp</item>
-    <item name="android:textColor">@color/material_gray_900</item>
-    <item name="android:textAllCaps">true</item>
-    <item name="android:textStyle">bold</item>
-  </style>
+    <!-- ToolBar -->
+    <style name="ToolBarStyle" parent="AppTheme">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="actionMenuTextColor">@android:color/white</item>
+    </style>
 
-  <!--Widget styles-->
-  <style name="WidgetPercentChangeTextStyle">
-    <item name="android:textSize">14sp</item>
-    <item name="android:textColor">@color/material_gray_900</item>
-    <item name="android:textStyle">bold</item>
-  </style>
-  <style name="WidgetBidPriceTextStyle">
-    <item name="android:textSize">14sp</item>
-  </style>
-  <style name="WidgetStockSymbolTextStyle">
-    <item name="android:textAllCaps">true</item>
-  </style>
+    <style name="PercentChangeTextStyle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/material_gray_900</item>
+    </style>
+
+    <style name="BidPriceTextStyle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/material_gray_900</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="StockSymbolTextStyle">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/material_gray_900</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!--Widget styles-->
+    <style name="WidgetPercentChangeTextStyle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/material_gray_900</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="WidgetBidPriceTextStyle">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="WidgetStockSymbolTextStyle">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
 
 
 </resources>

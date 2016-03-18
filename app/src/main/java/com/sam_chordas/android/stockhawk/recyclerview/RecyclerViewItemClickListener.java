@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk.rest;
+package com.sam_chordas.android.stockhawk.recyclerview;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -11,17 +11,8 @@ import android.view.View;
  */
 public class RecyclerViewItemClickListener implements RecyclerView.OnItemTouchListener {
 
-  @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-  }
-
   private GestureDetector gestureDetector;
   private OnItemClickListener listener;
-
-  public interface OnItemClickListener{
-    public void onItemClick(View v, int position);
-  }
-
   public RecyclerViewItemClickListener(Context context, OnItemClickListener listener) {
     this.listener = listener;
     gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
@@ -41,4 +32,13 @@ public class RecyclerViewItemClickListener implements RecyclerView.OnItemTouchLi
   }
 
   @Override public void onTouchEvent(RecyclerView view, MotionEvent motionEvent) { }
+
+  @Override
+  public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+  }
+
+  public interface OnItemClickListener {
+    public void onItemClick(View v, int position);
+  }
 }

@@ -1,4 +1,4 @@
-package com.sam_chordas.android.stockhawk.rest;
+package com.sam_chordas.android.stockhawk.recyclerview;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -50,6 +50,20 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
     return vh;
   }
 
+  @Override
+  public void onItemDismiss(int position) {
+    Cursor c = getCursor();
+    c.moveToPosition(position);
+    String symbol = c.getString(c.getColumnIndex(QuoteColumns.SYMBOL));
+    mContext.getContentResolver().delete(QuoteProvider.Quotes.withSymbol(symbol), null, null);
+    notifyItemRemoved(position);
+  }
+
+  @Override
+  public int getItemCount() {
+    return super.getItemCount();
+  }
+
   @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
   @Override
   public void onBindViewHolder(final ViewHolder viewHolder, final Cursor cursor){
@@ -79,18 +93,6 @@ public class QuoteCursorAdapter extends CursorRecyclerViewAdapter<QuoteCursorAda
     } else{
       viewHolder.change.setText(cursor.getString(cursor.getColumnIndex(QuoteColumns.CHANGE)));
     }
-  }
-
-  @Override public void onItemDismiss(int position) {
-    Cursor c = getCursor();
-    c.moveToPosition(position);
-    String symbol = c.getString(c.getColumnIndex(QuoteColumns.SYMBOL));
-    mContext.getContentResolver().delete(QuoteProvider.Quotes.withSymbol(symbol), null, null);
-    notifyItemRemoved(position);
-  }
-
-  @Override public int getItemCount() {
-    return super.getItemCount();
   }
 
   public static class ViewHolder extends RecyclerView.ViewHolder

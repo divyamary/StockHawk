@@ -16,18 +16,16 @@ public class QuoteProvider {
 
   static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
+    private static Uri buildUri(String... paths) {
+        Uri.Builder builder = BASE_CONTENT_URI.buildUpon();
+        for (String path : paths) {
+            builder.appendPath(path);
+        }
+        return builder.build();
+    }
+
   interface Path{
     String QUOTES = "quotes";
-    String QUOTE_INFO ="quoteinfo";
-      String QUOTE_JOIN="quotejoin";
-  }
-
-  private static Uri buildUri(String... paths){
-    Uri.Builder builder = BASE_CONTENT_URI.buildUpon();
-    for (String path:paths){
-      builder.appendPath(path);
-    }
-    return builder.build();
   }
 
   @TableEndpoint(table = QuoteDatabase.QUOTES)
@@ -49,6 +47,5 @@ public class QuoteProvider {
       return buildUri(Path.QUOTES, symbol);
     }
   }
-
 
 }

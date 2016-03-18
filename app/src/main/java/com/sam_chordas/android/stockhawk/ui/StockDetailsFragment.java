@@ -9,13 +9,16 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
@@ -30,13 +33,15 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.sam_chordas.android.stockhawk.R;
-import com.sam_chordas.android.stockhawk.rest.StockBus;
-import com.sam_chordas.android.stockhawk.rest.StockChartResultEvent;
+import com.sam_chordas.android.stockhawk.Utils;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.model.Series;
 import com.sam_chordas.android.stockhawk.model.StockChart;
-import com.sam_chordas.android.stockhawk.Utils;
+import com.sam_chordas.android.stockhawk.rest.ErrorBundle;
+import com.sam_chordas.android.stockhawk.rest.ErrorResultEvent;
+import com.sam_chordas.android.stockhawk.rest.StockBus;
+import com.sam_chordas.android.stockhawk.rest.StockChartResultEvent;
 import com.sam_chordas.android.stockhawk.service.StockClient;
 import com.squareup.otto.Subscribe;
 
@@ -52,25 +57,17 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 
-public class StockChartFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener ,
-        OnChartGestureListener,
-        OnChartValueSelectedListener {
+public class StockDetailsFragment extends Fragment implements
+        LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener,
+        OnChartGestureListener, OnChartValueSelectedListener {
 
     private static final String BUNDLE_CHART_RESPONSE = "BUNDLE_CHART_RESPONSE";
     private static final String BUNDLE_RANGE_TYPE = "BUNDLE_RANGE_TYPE";
     private static final String BUNDLE_DATE_FORMAT = "BUNDLE_DATE_FORMAT";
-    private static final int CHART_LOADER = 1;
-    private Cursor mCursor;
-    private boolean mIsBusRegistered;
+    private static final String BUNDLE_STOCK_SYMBOL = "BUNDLE_STOCK_SYMBOL";
+    private static final int DETAIL_LOADER = 1;
     @Bind(R.id.linechart)
     LineChart mChart;
-    private int seriesSize;
-    private List<String> listLabels;
-    private String stockSymbol;
-    private StockChart stockChart;
-    private String range = "1d";
-    private StockClient mStockClient;
-    private String dateFormat = "h:mm";
     @Bind(R.id.button_1D)
     Button oneDayButton;
     @Bind(R.id.button_1W)
@@ -117,14 +114,31 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     TextView nameTextView;
     @Bind(R.id.change)
     TextView changeTextView;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+    @Bind(R.id.text_toolbar_title)
+    TextView toolbarTitle;
+    @Bind(R.id.button_back)
+    ImageButton backButton;
+    private String LOG_TAG = StockDetailsFragment.class.getSimpleName();
+    //private Cursor mCursor;
+    private boolean mIsBusRegistered;
+    private int seriesSize;
+    private List<String> listLabels;
+    private String stockSymbol;
+    private StockChart stockChart;
+    private String range = "1d";
+    private StockClient mStockClient;
+    private String dateFormat = "h:mm";
     private boolean mIsViewRestored;
 
-    public StockChartFragment() {
+    public StockDetailsFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "StockDetailsFragment");
         super.onCreate(savedInstanceState);
         registerBus();
     }
@@ -132,9 +146,19 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_stock_chart, container, false);
         ButterKnife.bind(this, rootView);
+        stockSymbol = getArguments().getString("symbol");
+        mStockClient = new StockClient();
+        if (savedInstanceState != null) {
+            stockChart = savedInstanceState.getParcelable(BUNDLE_CHART_RESPONSE);
+            range = savedInstanceState.getString(BUNDLE_RANGE_TYPE);
+            dateFormat = savedInstanceState.getString(BUNDLE_DATE_FORMAT);
+            stockSymbol = savedInstanceState.getString(BUNDLE_STOCK_SYMBOL);
+        } else {
+            mStockClient.getStockChart(stockSymbol, range);
+        }
+        toolbarTitle.setText(stockSymbol);
         oneDayButton.setOnClickListener(this);
         oneWeekButton.setOnClickListener(this);
         oneMonthButton.setOnClickListener(this);
@@ -143,78 +167,31 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         oneYearButton.setOnClickListener(this);
         fiveYearsButton.setOnClickListener(this);
         maxButton.setOnClickListener(this);
-        stockSymbol = getArguments().getString("symbol");
-        mStockClient = new StockClient();
+        backButton.setOnClickListener(this);
+        setUpChart();
+        return rootView;
+    }
 
-        if(savedInstanceState!=null){
+    @Override
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) {
             stockChart = savedInstanceState.getParcelable(BUNDLE_CHART_RESPONSE);
             range = savedInstanceState.getString(BUNDLE_RANGE_TYPE);
             dateFormat = savedInstanceState.getString(BUNDLE_DATE_FORMAT);
-        } else {
-            mStockClient.getStockChart(stockSymbol, range);
+            stockSymbol = savedInstanceState.getString(BUNDLE_STOCK_SYMBOL);
+            mIsViewRestored = true;
         }
-
-        mChart.setDrawGridBackground(false);
-        // no description text
-        mChart.setDescription("");
-        //mChart.setNoDataTextDescription("Loading...");
-        // enable touch gestures
-        mChart.setTouchEnabled(true);
-        // enable scaling and dragging
-        mChart.setDragEnabled(true);
-        mChart.setScaleEnabled(true);
-        mChart.setPinchZoom(true);
-
-        mChart.setOnChartGestureListener(this);
-        mChart.setOnChartValueSelectedListener(this);
-        mChart.setExtraOffsets(5f, 20f, 5f, 20f);
-
-        // create a custom MarkerView (extend MarkerView) and specify the layout
-        // to use for it
-        CustomMarkerView mv = new CustomMarkerView(getContext(), R.layout.custom_marker_view);
-
-        // set the marker to the chart
-        mChart.setMarkerView(mv);
-
-
-        XAxis xAxis = mChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setEnabled(true);
-        xAxis.setSpaceBetweenLabels(4);
-        xAxis.setDrawGridLines(true);
-        xAxis.setDrawLabels(true);
-        xAxis.setAvoidFirstLastClipping(true);
-        xAxis.setTextColor(Color.WHITE);
-
-
-        YAxis leftAxis = mChart.getAxisLeft();
-        //leftAxis.enableGridDashedLine(10f, 10f, 0f);
-        leftAxis.setDrawGridLines(true);
-        leftAxis.setDrawZeroLine(false);
-        leftAxis.setDrawLimitLinesBehindData(true);
-        leftAxis.setTextColor(Color.WHITE);
-
-
-        mChart.getAxisRight().setEnabled(false);
-        mChart.animateX(2500, Easing.EasingOption.EaseInOutQuart);
-        mChart.getLegend().setEnabled(false);
-        return rootView;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        getLoaderManager().initLoader(CHART_LOADER, null, this);
-        if(mIsViewRestored) {
+        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
+        if (mIsViewRestored) {
             LinkedList<Double> closingValues = getStockClosingVals(stockChart);
-            setData(seriesSize, closingValues);
+            setData(closingValues);
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        unregisterBus();
-        super.onDestroy();
     }
 
     @Override
@@ -223,17 +200,43 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         outState.putParcelable(BUNDLE_CHART_RESPONSE, stockChart);
         outState.putString(BUNDLE_RANGE_TYPE, range);
         outState.putString(BUNDLE_DATE_FORMAT, dateFormat);
+        outState.putString(BUNDLE_STOCK_SYMBOL, stockSymbol);
     }
 
     @Override
-    public void onViewStateRestored(Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if(savedInstanceState!=null){
-            stockChart = savedInstanceState.getParcelable(BUNDLE_CHART_RESPONSE);
-            range = savedInstanceState.getString(BUNDLE_RANGE_TYPE);
-            dateFormat = savedInstanceState.getString(BUNDLE_DATE_FORMAT);
-            mIsViewRestored = true;
-        }
+    public void onDestroy() {
+        unregisterBus();
+        super.onDestroy();
+    }
+
+    private void setUpChart() {
+        mChart.setDrawGridBackground(false);
+        mChart.setDescription("");
+        mChart.setTouchEnabled(true);
+        mChart.setDragEnabled(true);
+        mChart.setScaleEnabled(true);
+        mChart.setPinchZoom(true);
+        mChart.setOnChartGestureListener(this);
+        mChart.setOnChartValueSelectedListener(this);
+        mChart.setExtraOffsets(5f, 20f, 5f, 20f);
+        CustomMarkerView customMarkerView = new CustomMarkerView(getContext(), R.layout.custom_marker_view);
+        mChart.setMarkerView(customMarkerView);
+        XAxis xAxis = mChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setEnabled(true);
+        xAxis.setSpaceBetweenLabels(4);
+        xAxis.setDrawGridLines(true);
+        xAxis.setDrawLabels(true);
+        xAxis.setAvoidFirstLastClipping(true);
+        xAxis.setTextColor(Color.WHITE);
+        YAxis leftAxis = mChart.getAxisLeft();
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setDrawZeroLine(false);
+        leftAxis.setDrawLimitLinesBehindData(true);
+        leftAxis.setTextColor(Color.WHITE);
+        mChart.getAxisRight().setEnabled(false);
+        mChart.animateX(2500, Easing.EasingOption.EaseInOutQuart);
+        mChart.getLegend().setEnabled(false);
     }
 
     private void registerBus() {
@@ -255,49 +258,31 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         mChart.clear();
         stockChart = stockChartResultEvent.getStockChart();
         LinkedList<Double> closingValues = getStockClosingVals(stockChart);
-        setData(seriesSize, closingValues);
+        setData(closingValues);
     }
 
-    private void setData(int count, LinkedList<Double> range) {
-
-        /*ArrayList<String> xVals = new ArrayList<String>();
-        for (int i = 0; i < count; i++) {
-            xVals.add((i) + "");
-        }*/
-
+    private void setData(LinkedList<Double> range) {
         ArrayList<Entry> yVals = new ArrayList<>();
-
         for (int i = 0; i < range.size(); i++) {
             Double val = range.get(i);
             yVals.add(new Entry(val.floatValue(), i));
         }
-
-        // create a dataset and give it a type
-        LineDataSet set1 = new LineDataSet(yVals, "");
-        // set1.setFillAlpha(110);
-        // set1.setFillColor(Color.RED);
-
-        // set the line to be drawn like this "- - - - - -"
-        //set1.enableDashedLine(10f, 5f, 0f);
-        //set1.enableDashedHighlightLine(10f, 5f, 0f);
-        set1.setColor(Color.WHITE);
-        set1.setDrawCircles(false);
-        set1.setLineWidth(1f);
-        set1.setCircleRadius(4f);
-        set1.setDrawCircleHole(false);
-        set1.setValueTextSize(9f);
-        Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.fade_red);
-        set1.setFillDrawable(drawable);
-        set1.setDrawFilled(true);
-
+        LineDataSet lineDataSet = new LineDataSet(yVals, "");
+        lineDataSet.setColor(Color.WHITE);
+        lineDataSet.setDrawCircles(false);
+        lineDataSet.setLineWidth(1f);
+        lineDataSet.setCircleRadius(4f);
+        lineDataSet.setDrawCircleHole(false);
+        lineDataSet.setValueTextSize(9f);
+        Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.fade_blue);
+        lineDataSet.setFillDrawable(drawable);
+        lineDataSet.setDrawFilled(true);
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
-        dataSets.add(set1); // add the datasets
-
+        dataSets.add(lineDataSet); // add the datasets
         // create a data object with the datasets
         LineData data = new LineData(listLabels, dataSets);
         data.setValueTextSize(9f);
         data.setDrawValues(false);
-
         // set data
         mChart.setData(data);
         mChart.setVisibleXRangeMaximum(seriesSize);
@@ -308,13 +293,14 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
         LinkedList<Double> closingValues = new LinkedList<>();
         listLabels = new ArrayList<>();
         seriesSize = stockChart.getSeries().size();
+        Log.d(LOG_TAG, "SeriesSize:" + seriesSize);
         for (Series series : stockChart.getSeries()) {
-            String date="";
-            if (range.equals("1d") || range.equals("7d")){
+            String date = "";
+            if (range.equals("1d") || range.equals("7d")) {
                 Long timeStamp = series.getTimestamp();
                 Date time = new Date(timeStamp * 1000L);
                 date = new SimpleDateFormat(dateFormat).format(time);
-             } else {
+            } else {
                 try {
                     Long dateStamp = series.getDateStamp();
                     Date time = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).parse(String.valueOf(dateStamp));
@@ -340,38 +326,39 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mCursor = data;
-        if (mCursor != null && mCursor.moveToFirst()) {
-            nameTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.NAME)));
-            bidTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
-            openTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.OPEN)));
-            highTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.DAYS_HIGH)));
-            lowTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.DAYS_LOW)));
-            volTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.VOLUME)));
-            epsTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.EARNINGS_SHARE)));
-            divYieldTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.DIVIDEND_YIELD)));
-            mktCapTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.MARKET_CAP)));
-            yrHighTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.YEAR_HIGH)));
-            yrLowTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.YEAR_LOW)));
-            avgVolTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.AVG_DAILY_VOL)));
-            peTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PE_RATIO)));
-            prevCloseTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PREV_CLOSE)));
-            if (mCursor.getInt(mCursor.getColumnIndex(QuoteColumns.ISUP)) == 1) {
-                changeTextView.setTextColor(getResources().getColor(R.color.material_green_700));
-            } else {
-                changeTextView.setTextColor(getResources().getColor(R.color.material_red_700));
-            }
-            if (Utils.showPercent){
-                changeTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE)));
-            } else{
-                changeTextView.setText(mCursor.getString(mCursor.getColumnIndex(QuoteColumns.CHANGE)));
+        if (loader.getId() == DETAIL_LOADER) {
+            Cursor qCursor = data;
+            if (qCursor != null && qCursor.moveToFirst()) {
+                nameTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.NAME)));
+                bidTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
+                openTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.OPEN)));
+                highTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.DAYS_HIGH)));
+                lowTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.DAYS_LOW)));
+                volTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.VOLUME)));
+                epsTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.EARNINGS_SHARE)));
+                divYieldTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.DIVIDEND_YIELD)));
+                mktCapTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.MARKET_CAP)));
+                yrHighTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.YEAR_HIGH)));
+                yrLowTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.YEAR_LOW)));
+                avgVolTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.AVG_DAILY_VOL)));
+                peTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.PE_RATIO)));
+                prevCloseTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.PREV_CLOSE)));
+                if (qCursor.getInt(qCursor.getColumnIndex(QuoteColumns.ISUP)) == 1) {
+                    changeTextView.setTextColor(getResources().getColor(R.color.material_green_700));
+                } else {
+                    changeTextView.setTextColor(getResources().getColor(R.color.material_red_700));
+                }
+                if (Utils.showPercent) {
+                    changeTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE)));
+                } else {
+                    changeTextView.setText(qCursor.getString(qCursor.getColumnIndex(QuoteColumns.CHANGE)));
+                }
             }
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
     }
 
 
@@ -420,13 +407,17 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 range = "max";
                 break;
             }
+            case R.id.button_back: {
+                getActivity().finish();
+                break;
+            }
             default: {
                 dateFormat = "h:mm";
                 range = "1d";
                 break;
             }
         }
-        if(Utils.isConnected(getContext())) {
+        if (Utils.isConnected(getContext())) {
             mStockClient.getStockChart(stockSymbol, range);
         } else {
             mChart.clear();
@@ -434,8 +425,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     }
 
     private void changeButtonTextColor(int viewId) {
-        switch(viewId){
-            case R.id.button_1D:{
+        switch (viewId) {
+            case R.id.button_1D: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_blue_700));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
@@ -446,7 +437,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 break;
             }
-            case R.id.button_1W:{
+            case R.id.button_1W: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_blue_700));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
@@ -457,7 +448,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 break;
             }
-            case R.id.button_1M:{
+            case R.id.button_1M: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_blue_700));
@@ -468,7 +459,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 break;
             }
-            case R.id.button_3M:{
+            case R.id.button_3M: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
@@ -479,7 +470,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 break;
             }
-            case R.id.button_6M:{
+            case R.id.button_6M: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
@@ -490,7 +481,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 break;
             }
-            case R.id.button_1Y:{
+            case R.id.button_1Y: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
@@ -501,7 +492,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 break;
             }
-            case R.id.button_5Y:{
+            case R.id.button_5Y: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
@@ -512,7 +503,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 maxButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 break;
             }
-            case R.id.button_max:{
+            case R.id.button_max: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
@@ -523,7 +514,7 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
                 maxButton.setTextColor(getResources().getColor(R.color.material_blue_700));
                 break;
             }
-            default:{
+            default: {
                 oneDayButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneWeekButton.setTextColor(getResources().getColor(R.color.material_gray_900));
                 oneMonthButton.setTextColor(getResources().getColor(R.color.material_gray_900));
@@ -546,10 +537,8 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     @Override
     public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
         Log.i("Gesture", "END, lastGesture: " + lastPerformedGesture);
-
-        // un-highlight values after the gesture is finished and no single-tap
         if (lastPerformedGesture != ChartTouchListener.ChartGesture.SINGLE_TAP)
-            mChart.highlightValues(null); // or highlightTouch(null) for callback to onNothingSelected(...)
+            mChart.highlightValues(null);
     }
 
     @Override
@@ -584,8 +573,6 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
 
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
-        Highlight highlight = mChart.getHighlightByTouchPoint(mChart.getX(), mChart.getY());
-
         Log.i("Entry selected", e.toString());
         Log.i("LOWHIGH", "low: " + mChart.getLowestVisibleXIndex() + ", high: " + mChart.getHighestVisibleXIndex());
         Log.i("MIN MAX", "xmin: " + mChart.getXChartMin() + ", xmax: " + mChart.getXChartMax() + ", ymin: " + mChart.getYChartMin() + ", ymax: " + mChart.getYChartMax());
@@ -594,5 +581,17 @@ public class StockChartFragment extends Fragment implements LoaderManager.Loader
     @Override
     public void onNothingSelected() {
         Log.i("Nothing selected", "Nothing selected.");
+    }
+
+    @Subscribe
+    public void onRetrofitFailure(ErrorResultEvent event) {
+        ErrorBundle errorBundle = event.getErrorBundle();
+        if (errorBundle != null && errorBundle.getAppMessage() != null) {
+            if (errorBundle.getAppMessage().equals("Unknown exception")) {
+                Toast.makeText(getContext(), "There was an error fetching the stock chart.", Toast.LENGTH_SHORT).show();
+            } else if (errorBundle.getAppMessage().equals("Socket timeout")) {
+                Toast.makeText(getContext(), "Timed out fetching the stock chart. Try again.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

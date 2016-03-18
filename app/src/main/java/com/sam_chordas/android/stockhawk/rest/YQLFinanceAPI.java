@@ -9,7 +9,6 @@ import retrofit2.http.Url;
 
 public interface YQLFinanceAPI {
 
-    //type is either close or quote
     @GET
     Call<StockDetails> getStockData(@Url String query,
                                     @Query("format") String format,

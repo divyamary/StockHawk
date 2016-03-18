@@ -1,12 +1,17 @@
 package com.sam_chordas.android.stockhawk.service;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
-import com.sam_chordas.android.stockhawk.rest.ApiManager;
-import com.sam_chordas.android.stockhawk.rest.StockBus;
-import com.sam_chordas.android.stockhawk.rest.StockChartResultEvent;
 import com.sam_chordas.android.stockhawk.model.StockChart;
 import com.sam_chordas.android.stockhawk.model.StockDetails;
+import com.sam_chordas.android.stockhawk.rest.ApiManager;
+import com.sam_chordas.android.stockhawk.rest.ErrorBundle;
+import com.sam_chordas.android.stockhawk.rest.ErrorResultEvent;
+import com.sam_chordas.android.stockhawk.rest.StockBus;
+import com.sam_chordas.android.stockhawk.rest.StockChartResultEvent;
+import com.squareup.otto.Bus;
 
 import java.io.IOException;
 
@@ -17,34 +22,32 @@ import retrofit2.Response;
 
 public class StockClient {
 
+    final String LOG_TAG = StockClient.class.getSimpleName();
+    private Bus stockBus = StockBus.getInstance();
+
     public void getStockChart(String stockSymbol, String range) {
-        Log.d(StockClient.class.getSimpleName(), "Stock Chart Client");
+        Log.d(LOG_TAG, "Stock Client");
         //"alternate_ranges": ["5d", "7d", "1m","3m","6m","1y","2y","5y","my"]
         Call<StockChart> call = ApiManager.getStockChartApi().getStockChartData(stockSymbol, range);
         call.enqueue(new Callback<StockChart>() {
             @Override
             public void onResponse(Call<StockChart> call, Response<StockChart> response) {
                 if (response.isSuccessful()) {
-                    Log.d("Success", "Retrofit success");
+                    Log.d(LOG_TAG, "Retrofit call successful");
                     StockChart stockChart = response.body();
                     if (stockChart != null) {
                         StockBus.getInstance().post(new StockChartResultEvent(stockChart));
                     }
                 } else {
                     int statusCode = response.code();
-                    Log.e("Error", "Retrofit status code:" + statusCode);
-
+                    Log.e(LOG_TAG, "Retrofit call not successful:" + statusCode);
                 }
             }
-
             @Override
             public void onFailure(Call<StockChart> call, Throwable throwable) {
-                Log.e("Failure", "Retrofit Failure" + throwable.getMessage());
-                /*if (progressDialog.isShowing()) {
-                    progressDialog.dismiss();
-                }
+                Log.e(LOG_TAG, "Retrofit call Failure" + throwable.getMessage());
                 ErrorBundle errorBundle = ErrorBundle.adapt(throwable);
-                MovieBus.getInstance().post(new ErrorResultEvent(errorBundle));*/
+                stockBus.post(new ErrorResultEvent(errorBundle));
             }
         });
 
@@ -60,8 +63,27 @@ public class StockClient {
         Call<StockDetails> call = ApiManager.getStockApi().getStockData(query, format, env, callback);
         try {
             stockDetails = call.execute().body();
+            if (stockDetails != null && stockDetails.getQuery().getCount() == 1 &&
+                    stockDetails.getQuery().getResults().getQuote().get(0).getStockExchange() == null) {
+                final String message = "This ticker could not be found.";
+                Handler handler = new Handler(Looper.getMainLooper());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        stockBus.post(new ErrorResultEvent(message));
+                    }
+                });
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(LOG_TAG, "Retrofit call Failure" + e.getMessage());
+            final ErrorBundle errorBundle = ErrorBundle.adapt(e);
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    stockBus.post(new ErrorResultEvent(errorBundle));
+                }
+            });
         }
         return stockDetails;
     }

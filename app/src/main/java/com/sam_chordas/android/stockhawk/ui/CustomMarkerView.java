@@ -10,9 +10,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.utils.Utils;
 import com.sam_chordas.android.stockhawk.R;
 
-/**
- * Created by divyamary on 16-03-2016.
- */
+
 public class CustomMarkerView extends MarkerView {
 
     private TextView tvContent;

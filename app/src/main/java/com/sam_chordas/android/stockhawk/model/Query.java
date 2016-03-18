@@ -16,9 +16,6 @@ public class Query {
     @SerializedName("lang")
     @Expose
     private String lang;
-    @SerializedName("diagnostics")
-    @Expose
-    private Diagnostics diagnostics;
     @SerializedName("results")
     @Expose
     private Results results;
@@ -63,20 +60,6 @@ public class Query {
      */
     public void setLang(String lang) {
         this.lang = lang;
-    }
-
-    /**
-     * @return The diagnostics
-     */
-    public Diagnostics getDiagnostics() {
-        return diagnostics;
-    }
-
-    /**
-     * @param diagnostics The diagnostics
-     */
-    public void setDiagnostics(Diagnostics diagnostics) {
-        this.diagnostics = diagnostics;
     }
 
     /**

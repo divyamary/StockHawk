@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Credit:
  * Created by jamesanto on 12/22/15.
  */
 public class JsonpParser {

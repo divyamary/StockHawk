@@ -38,7 +38,7 @@ final class GsonRequestBodyConverter<T> implements Converter<T, RequestBody> {
             gson.toJson(value, type, writer);
             writer.flush();
         } catch (IOException e) {
-            throw new AssertionError(e); // Writing to Buffer does no I/O.
+            throw new AssertionError(e);
         }
         return RequestBody.create(MEDIA_TYPE, buffer.readByteString());
     }

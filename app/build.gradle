@@ -17,14 +17,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-        debug{
-            pseudoLocalesEnabled true
-        }
     }
 }
 
 repositories {
-    maven { url "https://jitpack.io" }
+
 }
 
 dependencies {
@@ -38,8 +35,8 @@ dependencies {
     apt 'net.simonvt.schematic:schematic-compiler:0.6.3'
     compile 'net.simonvt.schematic:schematic:0.6.3'
     compile 'com.melnykov:floatingactionbutton:1.2.0'
-    compile 'com.android.support:design:23.1.1'
-    compile('com.afollestad.material-dialogs:core:0.8.4.2@aar') {
+    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.7@aar') {
         transitive = true
     }
     compile 'com.github.PhilJay:MPAndroidChart:v2.2.3'
