@@ -10,6 +10,7 @@
     <string name="input_hint" translatable="false">FB</string>
     <string name="input_prefill"></string>
     <string name="widget_title">Today\'s Market</string>
+    <string name="stock_present">This stock is already saved!</string>
     <string name="empty_stock_list">It is empty here. You need to be connected to the Internet to add stocks.</string>
     <string name="outdated_stocks">Stock Quotes might be out-dated! Connect to the internet to refresh</string>
     <string name="error_stock_name">This stock ticker could not be found.</string>

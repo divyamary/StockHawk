@@ -60,13 +60,13 @@ public class Utils {
         return change;
     }
 
-    public static String getReadableCount(String count){
+    public static String getReadableCount(String count) {
         long value = Long.valueOf(count);
         if (value < 1000) {
             return "" + value;
         }
         int exp = (int) (Math.log(value) / Math.log(1000));
-        return String.format("%.1f %c", value / Math.pow(1000, exp), "KMGTPE".charAt(exp-1));
+        return String.format("%.1f %c", value / Math.pow(1000, exp), "KMGTPE".charAt(exp - 1));
     }
 
     public static ContentProviderOperation buildBatchOperation(Quote quote) {

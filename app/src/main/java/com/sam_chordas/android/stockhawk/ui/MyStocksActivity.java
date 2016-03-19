@@ -129,7 +129,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                             new String[]{input.toString().toUpperCase()}, null);
                                     if (cursor.getCount() != 0) {
                                         Toast toast =
-                                                Toast.makeText(MyStocksActivity.this, "This stock is already saved!",
+                                                Toast.makeText(MyStocksActivity.this, getString(R.string.stock_present),
                                                         Toast.LENGTH_LONG);
                                         toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
                                         toast.show();
@@ -262,16 +262,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mCursorAdapter.swapCursor(data);
         mCursor = data;
-        if(mCursor != null) {
+        if (mCursor != null) {
             if (mCursor.getCount() == 0 && !Utils.isConnected(mContext)) {
                 recyclerView.setVisibility(View.GONE);
                 emptyView.setText(getString(R.string.empty_stock_list));
                 emptyView.setVisibility(View.VISIBLE);
-            } else if(!Utils.isConnected(mContext) && mCursor.getCount() != 0){
+            } else if (!Utils.isConnected(mContext) && mCursor.getCount() != 0) {
                 recyclerView.setVisibility(View.VISIBLE);
                 emptyView.setVisibility(View.GONE);
                 Toast.makeText(mContext, getString(R.string.outdated_stocks), Toast.LENGTH_SHORT).show();
-            } else if(Utils.isConnected(mContext) && mCursor.getCount() != 0){
+            } else if (Utils.isConnected(mContext) && mCursor.getCount() != 0) {
                 recyclerView.setVisibility(View.VISIBLE);
                 emptyView.setVisibility(View.GONE);
             }

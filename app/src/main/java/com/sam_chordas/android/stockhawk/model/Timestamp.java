@@ -1,4 +1,3 @@
-
 package com.sam_chordas.android.stockhawk.model;
 
 import android.os.Parcel;
@@ -8,17 +7,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class Timestamp implements Parcelable{
-
-    @SerializedName("min")
-    @Expose
-    private Integer min;
-    @SerializedName("max")
-    @Expose
-    private Integer max;
-
-    protected Timestamp(Parcel in) {
-    }
+public class Timestamp implements Parcelable {
 
     public static final Creator<Timestamp> CREATOR = new Creator<Timestamp>() {
         @Override
@@ -31,6 +20,15 @@ public class Timestamp implements Parcelable{
             return new Timestamp[size];
         }
     };
+    @SerializedName("min")
+    @Expose
+    private Integer min;
+    @SerializedName("max")
+    @Expose
+    private Integer max;
+
+    protected Timestamp(Parcel in) {
+    }
 
     /**
      * @return The min

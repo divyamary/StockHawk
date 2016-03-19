@@ -1,4 +1,3 @@
-
 package com.sam_chordas.android.stockhawk.model;
 
 import android.os.Parcel;
@@ -7,8 +6,19 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Meta implements Parcelable{
+public class Meta implements Parcelable {
 
+    public static final Creator<Meta> CREATOR = new Creator<Meta>() {
+        @Override
+        public Meta createFromParcel(Parcel in) {
+            return new Meta(in);
+        }
+
+        @Override
+        public Meta[] newArray(int size) {
+            return new Meta[size];
+        }
+    };
     @SerializedName("uri")
     @Expose
     private String uri;
@@ -46,18 +56,6 @@ public class Meta implements Parcelable{
         timezone = in.readString();
         currency = in.readString();
     }
-
-    public static final Creator<Meta> CREATOR = new Creator<Meta>() {
-        @Override
-        public Meta createFromParcel(Parcel in) {
-            return new Meta(in);
-        }
-
-        @Override
-        public Meta[] newArray(int size) {
-            return new Meta[size];
-        }
-    };
 
     /**
      * @return The uri

@@ -1,4 +1,3 @@
-
 package com.sam_chordas.android.stockhawk.model;
 
 import com.google.gson.annotations.Expose;

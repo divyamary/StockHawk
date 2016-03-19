@@ -20,8 +20,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 
-
-
 public class ApiManager {
 
     private static final String CHART_BASE_URL = "http://chartapi.finance.yahoo.com/instrument/1.0/";

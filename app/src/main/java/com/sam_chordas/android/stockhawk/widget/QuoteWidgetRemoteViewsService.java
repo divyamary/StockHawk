@@ -25,7 +25,7 @@ public class QuoteWidgetRemoteViewsService extends RemoteViewsService {
     private static class QuoteRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
         Context mContext = null;
-        private Cursor mCursor=null;
+        private Cursor mCursor = null;
 
         public QuoteRemoteViewsFactory(Context context, Intent intent) {
             mContext = context;
@@ -67,7 +67,7 @@ public class QuoteWidgetRemoteViewsService extends RemoteViewsService {
             mCursor.moveToPosition(position);
             String symbol = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL));
             String change;
-            if (Utils.showPercent){
+            if (Utils.showPercent) {
                 change = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.PERCENT_CHANGE));
             } else {
                 change = mCursor.getString(mCursor.getColumnIndex(QuoteColumns.CHANGE));
@@ -77,9 +77,9 @@ public class QuoteWidgetRemoteViewsService extends RemoteViewsService {
             RemoteViews remoteViews = new RemoteViews(mContext.getPackageName(),
                     R.layout.widget_collection_item);
             remoteViews.setTextViewText(R.id.stock_symbol, symbol);
-            remoteViews.setTextViewText(R.id.bid_price,bidPrice);
+            remoteViews.setTextViewText(R.id.bid_price, bidPrice);
             remoteViews.setTextViewText(R.id.change, change);
-            if(isUp == 1) {
+            if (isUp == 1) {
                 remoteViews.setInt(R.id.change, "setBackgroundResource", R.drawable.percent_change_pill_green);
             } else {
                 remoteViews.setInt(R.id.change, "setBackgroundResource", R.drawable.percent_change_pill_red);

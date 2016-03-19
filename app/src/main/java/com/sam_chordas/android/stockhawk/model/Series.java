@@ -1,4 +1,3 @@
-
 package com.sam_chordas.android.stockhawk.model;
 
 import android.os.Parcel;
@@ -8,8 +7,19 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class Series implements Parcelable{
+public class Series implements Parcelable {
 
+    public static final Creator<Series> CREATOR = new Creator<Series>() {
+        @Override
+        public Series createFromParcel(Parcel in) {
+            return new Series(in);
+        }
+
+        @Override
+        public Series[] newArray(int size) {
+            return new Series[size];
+        }
+    };
     @SerializedName("Timestamp")
     @Expose
     private Long Timestamp;
@@ -34,18 +44,6 @@ public class Series implements Parcelable{
 
     protected Series(Parcel in) {
     }
-
-    public static final Creator<Series> CREATOR = new Creator<Series>() {
-        @Override
-        public Series createFromParcel(Parcel in) {
-            return new Series(in);
-        }
-
-        @Override
-        public Series[] newArray(int size) {
-            return new Series[size];
-        }
-    };
 
     /**
      * @return The Timestamp

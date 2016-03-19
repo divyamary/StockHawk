@@ -50,6 +50,7 @@ public class StockClient {
                     Log.e(LOG_TAG, "Retrofit call not successful:" + statusCode);
                 }
             }
+
             @Override
             public void onFailure(Call<StockChart> call, Throwable throwable) {
                 Log.e(LOG_TAG, "Retrofit call Failure" + throwable.getMessage());

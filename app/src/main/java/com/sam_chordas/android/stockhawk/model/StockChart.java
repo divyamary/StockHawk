@@ -1,4 +1,3 @@
-
 package com.sam_chordas.android.stockhawk.model;
 
 import android.os.Parcel;
@@ -12,6 +11,17 @@ import java.util.List;
 
 public class StockChart implements Parcelable {
 
+    public static final Creator<StockChart> CREATOR = new Creator<StockChart>() {
+        @Override
+        public StockChart createFromParcel(Parcel in) {
+            return new StockChart(in);
+        }
+
+        @Override
+        public StockChart[] newArray(int size) {
+            return new StockChart[size];
+        }
+    };
     @SerializedName("meta")
     @Expose
     private Meta meta;
@@ -30,18 +40,6 @@ public class StockChart implements Parcelable {
 
     protected StockChart(Parcel in) {
     }
-
-    public static final Creator<StockChart> CREATOR = new Creator<StockChart>() {
-        @Override
-        public StockChart createFromParcel(Parcel in) {
-            return new StockChart(in);
-        }
-
-        @Override
-        public StockChart[] newArray(int size) {
-            return new StockChart[size];
-        }
-    };
 
     /**
      * @return The meta

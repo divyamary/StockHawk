@@ -19,14 +19,10 @@ import com.sam_chordas.android.stockhawk.ui.StockDetailsActivity;
  */
 public class QuoteWidgetProvider extends AppWidgetProvider {
 
-    public static final String ACTION_DATA_UPDATED =
-            "com.sam_chordas.android.stockhawk.ACTION_DATA_UPDATED";
-    public static String REFRESH_ACTION = "com.sam_chordas.android.stockhawk.widget.REFRESH";
-    public static String CLICK_ACTION = "com.sam_chordas.android.stockhawk.widget.CLICK";
-    public static String EXTRA_QUOTE = "com.sam_chordas.android.stockhawk.widget.quote";
+    public static final String ACTION_DATA_UPDATED = "com.sam_chordas.android.stockhawk.ACTION_DATA_UPDATED";
+    public static final String REFRESH_ACTION = "com.sam_chordas.android.stockhawk.widget.REFRESH";
+    public static final String EXTRA_QUOTE = "com.sam_chordas.android.stockhawk.widget.quote";
     private final String LOG_TAG = QuoteWidgetProvider.class.getSimpleName();
-    private String stockSymbol;
-
 
     @Override
     public void onReceive(Context ctx, Intent intent) {
@@ -37,9 +33,6 @@ public class QuoteWidgetProvider extends AppWidgetProvider {
             final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
             final ComponentName cn = new ComponentName(context, QuoteWidgetProvider.class);
             mgr.notifyAppWidgetViewDataChanged(mgr.getAppWidgetIds(cn), R.id.widget_list);
-        }
-        if (intent.getAction().equals(QuoteWidgetProvider.CLICK_ACTION)) {
-            stockSymbol = intent.getStringExtra(QuoteWidgetProvider.EXTRA_QUOTE);
         }
     }
 
@@ -69,11 +62,6 @@ public class QuoteWidgetProvider extends AppWidgetProvider {
         rv.setOnClickPendingIntent(R.id.refresh, refreshPendingIntent);
 
         final Intent openAppIntent = new Intent(context, StockDetailsActivity.class);
-        /*openAppIntent.setAction(QuoteWidgetProvider.CLICK_ACTION);
-        openAppIntent.putExtra(QuoteWidgetProvider.EXTRA_QUOTE, stockSymbol);
-        openAppIntent.setData(Uri.parse(openAppIntent.toUri(Intent.URI_INTENT_SCHEME)));
-        final PendingIntent openAppPendingIntent = PendingIntent.getActivity(context, 0,
-                openAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);*/
         PendingIntent openAppPendingIntent = TaskStackBuilder.create(context)
                 .addNextIntentWithParentStack(openAppIntent)
                 .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);

@@ -1,4 +1,3 @@
-
 package com.sam_chordas.android.stockhawk.model;
 
 import android.os.Parcel;
@@ -8,8 +7,19 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 
-public class Ranges implements Parcelable{
+public class Ranges implements Parcelable {
 
+    public static final Creator<Ranges> CREATOR = new Creator<Ranges>() {
+        @Override
+        public Ranges createFromParcel(Parcel in) {
+            return new Ranges(in);
+        }
+
+        @Override
+        public Ranges[] newArray(int size) {
+            return new Ranges[size];
+        }
+    };
     @SerializedName("close")
     @Expose
     private Close close;
@@ -28,18 +38,6 @@ public class Ranges implements Parcelable{
 
     protected Ranges(Parcel in) {
     }
-
-    public static final Creator<Ranges> CREATOR = new Creator<Ranges>() {
-        @Override
-        public Ranges createFromParcel(Parcel in) {
-            return new Ranges(in);
-        }
-
-        @Override
-        public Ranges[] newArray(int size) {
-            return new Ranges[size];
-        }
-    };
 
     /**
      * @return The close

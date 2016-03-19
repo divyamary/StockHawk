@@ -11,34 +11,39 @@ import android.view.View;
  */
 public class RecyclerViewItemClickListener implements RecyclerView.OnItemTouchListener {
 
-  private GestureDetector gestureDetector;
-  private OnItemClickListener listener;
-  public RecyclerViewItemClickListener(Context context, OnItemClickListener listener) {
-    this.listener = listener;
-    gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-      @Override public boolean onSingleTapUp(MotionEvent e) {
-        return true;
-      }
-    });
-  }
+    private GestureDetector gestureDetector;
+    private OnItemClickListener listener;
 
-  @Override public boolean onInterceptTouchEvent(RecyclerView view, MotionEvent e) {
-    View childView = view.findChildViewUnder(e.getX(), e.getY());
-    if (childView != null && listener != null && gestureDetector.onTouchEvent(e)) {
-      listener.onItemClick(childView, view.getChildPosition(childView));
-      return true;
+    public RecyclerViewItemClickListener(Context context, OnItemClickListener listener) {
+        this.listener = listener;
+        gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                return true;
+            }
+        });
     }
-    return false;
-  }
 
-  @Override public void onTouchEvent(RecyclerView view, MotionEvent motionEvent) { }
+    @Override
+    public boolean onInterceptTouchEvent(RecyclerView view, MotionEvent e) {
+        View childView = view.findChildViewUnder(e.getX(), e.getY());
+        if (childView != null && listener != null && gestureDetector.onTouchEvent(e)) {
+            listener.onItemClick(childView, view.getChildPosition(childView));
+            return true;
+        }
+        return false;
+    }
 
-  @Override
-  public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+    @Override
+    public void onTouchEvent(RecyclerView view, MotionEvent motionEvent) {
+    }
 
-  }
+    @Override
+    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
 
-  public interface OnItemClickListener {
-    public void onItemClick(View v, int position);
-  }
+    }
+
+    public interface OnItemClickListener {
+        public void onItemClick(View v, int position);
+    }
 }

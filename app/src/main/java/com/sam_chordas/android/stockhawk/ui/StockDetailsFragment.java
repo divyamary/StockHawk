@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
@@ -121,7 +120,6 @@ public class StockDetailsFragment extends Fragment implements
     @Bind(R.id.button_back)
     ImageButton backButton;
     private String LOG_TAG = StockDetailsFragment.class.getSimpleName();
-    //private Cursor mCursor;
     private boolean mIsBusRegistered;
     private int seriesSize;
     private List<String> listLabels;
@@ -189,9 +187,12 @@ public class StockDetailsFragment extends Fragment implements
     public void onStart() {
         super.onStart();
         getLoaderManager().initLoader(DETAIL_LOADER, null, this);
-        if (mIsViewRestored) {
+        if (mIsViewRestored && Utils.isConnected(getContext())) {
             LinkedList<Double> closingValues = getStockClosingVals(stockChart);
             setData(closingValues);
+        }
+        if (!Utils.isConnected(getContext())) {
+            mChart.setNoDataText(getResources().getString(R.string.chart_fetch_error));
         }
     }
 
@@ -247,6 +248,7 @@ public class StockDetailsFragment extends Fragment implements
     private void setUpChart() {
         mChart.setDrawGridBackground(false);
         mChart.setDescription("");
+        mChart.setNoDataText("Loading chart...");
         mChart.setTouchEnabled(true);
         mChart.setDragEnabled(true);
         mChart.setScaleEnabled(true);
@@ -456,6 +458,7 @@ public class StockDetailsFragment extends Fragment implements
             mStockClient.getStockChart(stockSymbol, range);
         } else {
             mChart.clear();
+            mChart.setNoDataText(getResources().getString(R.string.chart_fetch_error));
         }
     }
 
@@ -620,14 +623,15 @@ public class StockDetailsFragment extends Fragment implements
 
     @Subscribe
     public void onRetrofitFailure(ErrorResultEvent event) {
+        mChart.setNoDataText("");
         ErrorBundle errorBundle = event.getErrorBundle();
         String endpoint = event.getEndpoint();
         if (errorBundle != null && errorBundle.getAppMessage() != null
                 && endpoint != null && endpoint.equals("ChartAPI")) {
             if (errorBundle.getAppMessage().equals("Unknown exception")) {
-                Toast.makeText(getContext(), getResources().getString(R.string.chart_fetch_error), Toast.LENGTH_SHORT).show();
+                mChart.setNoDataText(getResources().getString(R.string.chart_fetch_error));
             } else if (errorBundle.getAppMessage().equals("Socket timeout")) {
-                Toast.makeText(getContext(), getResources().getString(R.string.chart_timeout_error), Toast.LENGTH_SHORT).show();
+                mChart.setNoDataText(getResources().getString(R.string.chart_timeout_error));
             }
         }
     }
